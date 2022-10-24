@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "475553616931",
+    "project_id": "toilet-app-b6552",
+    "storage_bucket": "toilet-app-b6552.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:475553616931:android:60ce459ae95352269f0d96",
+        "android_client_info": {
+          "package_name": "edu.ap.toilettime"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "475553616931-s3olg3qign02dtbgrmabgas2dn3v1cfb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA4JiIfSKUCMvYgQmN1GQ6kQqKav37Pyxs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "475553616931-s3olg3qign02dtbgrmabgas2dn3v1cfb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
