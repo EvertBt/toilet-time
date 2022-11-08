@@ -1,8 +1,7 @@
 package edu.ap.toilettime.database
 
 import android.util.Log
-import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.FirebaseFirestore
+import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import edu.ap.toilettime.model.Toilet
@@ -10,7 +9,7 @@ import edu.ap.toilettime.model.User
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 
-class DatabaseHelper {
+class ToiletRepository {
 
     private val firebaseTag = "Firebase"
     private val db = Firebase.firestore
@@ -110,12 +109,47 @@ class DatabaseHelper {
         return@runBlocking true
     }
 
-    fun deleteToilet(id : String){
+    fun updateToilet(toilet: Toilet) : Toilet? = runBlocking{
 
-        db.collection(COLLECTION_TOILETS).document(id).delete().addOnSuccessListener {
+        // Create a new toilet hashmap
+        val emailsAsString = ArrayList<String>()
+        for (user in toilet.reporterEmails){
+            emailsAsString.add(user.email)
+        }
+
+        val toiletMap : Map<String, Any> = hashMapOf(
+            STREET to toilet.street,
+            DISTRICT to toilet.district,
+            MEN_ACCESSIBLE to toilet.menAccessible,
+            WOMEN_ACCESSIBLE to toilet.womenAccessible,
+            WHEELCHAIR_ACCESSIBLE to toilet.wheelchairAccessible,
+            CHANGING_TABLE to toilet.changingTable,
+            REPORTER_EMAILS to emailsAsString,
+        )
+
+        val task: Task<Void> = db.collection(COLLECTION_TOILETS).document(toilet.id).update(toiletMap)
+        task.await()
+
+        if (task.isSuccessful){
+            Log.d(firebaseTag, "Toilet with id ${toilet.id} successfully updated!")
+            return@runBlocking toilet
+        }else{
+            Log.w(firebaseTag, "Error deleting toilet")
+            return@runBlocking null
+        }
+    }
+
+    fun deleteToilet(id : String) : Boolean = runBlocking{
+
+        val task = db.collection(COLLECTION_TOILETS).document(id).delete()
+        task.await()
+
+        if (task.isSuccessful) {
             Log.d(firebaseTag, "Toilet with id $id successfully deleted!")
-        }.addOnFailureListener { e ->
-            Log.w(firebaseTag, "Error deleting toilet", e)
+            return@runBlocking true
+        }else {
+            Log.w(firebaseTag, "Error deleting toilet")
+            return@runBlocking false
         }
     }
 
