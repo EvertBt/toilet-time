@@ -2,8 +2,10 @@ package edu.ap.toilettime.database
 
 import android.util.Log
 import com.google.android.gms.tasks.Task
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import edu.ap.toilettime.api.APIHelper
 import edu.ap.toilettime.model.Toilet
 import edu.ap.toilettime.model.User
 import kotlinx.coroutines.runBlocking
@@ -14,33 +16,56 @@ class ToiletRepository {
     private val firebaseTag = "Firebase"
     private val db = Firebase.firestore
 
-    fun allToilets() : ArrayList<Toilet> = runBlocking{
+    fun allToilets() : ArrayList<Toilet>? = runBlocking{
 
         val toiletsArrayList = ArrayList<Toilet>()
-        val document = db.collection(COLLECTION_TOILETS).get().await()
+        val task = db.collection(COLLECTION_TOILETS).get()
+        val document = task.await()
 
-        if (document != null) {
+        if (task.isSuccessful){
+
             for (doc in document.documents) {
                 val data = doc.data
 
-                val street = data?.get(STREET) as String
-                val district = data[DISTRICT] as String
-                val menAccessible = data[MEN_ACCESSIBLE] as Boolean
-                val womenAccessible = data[WOMEN_ACCESSIBLE] as Boolean
-                val wheelchairAccessible = data[WHEELCHAIR_ACCESSIBLE] as Boolean
-                val changingTable = data[CHANGING_TABLE] as Boolean
-                val reporterEmailsStrings = data[REPORTER_EMAILS] as List<*>
+                val lat = data?.get(Toilet.LAT) as Double
+                val long = data[Toilet.LONG] as Double
+                val street = data[Toilet.STREET] as String
+                val houseNr = data[Toilet.HOUSE_NR] as String
+                val district = data[Toilet.DISTRICT] as String
+                val districtCode = data[Toilet.DISTRICT_CODE] as String
+                val menAccessible = data[Toilet.MEN_ACCESSIBLE] as Boolean
+                val womenAccessible = data[Toilet.WOMEN_ACCESSIBLE] as Boolean
+                val wheelchairAccessible = data[Toilet.WHEELCHAIR_ACCESSIBLE] as Boolean
+                val changingTable = data[Toilet.CHANGING_TABLE] as Boolean
+                val reporterEmailsStrings = data[Toilet.REPORTER_EMAILS] as List<*>
 
                 val reporterEmails = ArrayList<User>()
                 for (email in reporterEmailsStrings){
                     reporterEmails.add(User(email as String))
                 }
 
-                toiletsArrayList.add(Toilet(doc.id, street, district, menAccessible, womenAccessible, wheelchairAccessible, changingTable, reporterEmails))
+                toiletsArrayList.add(Toilet(doc.id, lat, long, street, houseNr, district, districtCode, menAccessible, womenAccessible, wheelchairAccessible, changingTable, reporterEmails))
             }
+
+            if (document.documents.isEmpty()){
+
+                Log.d(firebaseTag, "Database is empty, retrieving data from API")
+                val apiHelper = APIHelper()
+                val toilets = apiHelper.getToilets()
+
+                addAllToilets(toilets)
+
+                Log.i(firebaseTag, "Added ${toilets.size} toilets from API")
+            }
+
+            return@runBlocking toiletsArrayList
+
+        }else{
+
+            Log.e(firebaseTag, "Error getting all toilets", task.exception)
+            return@runBlocking null
         }
 
-        return@runBlocking toiletsArrayList
     }
 
     fun getToilet(id: String) : Toilet? = runBlocking{
@@ -53,20 +78,24 @@ class ToiletRepository {
 
             if (data != null){
 
-                val street = data[STREET] as String
-                val district = data[DISTRICT] as String
-                val menAccessible = data[MEN_ACCESSIBLE] as Boolean
-                val womenAccessible = data[WOMEN_ACCESSIBLE] as Boolean
-                val wheelchairAccessible = data[WHEELCHAIR_ACCESSIBLE] as Boolean
-                val changingTable = data[CHANGING_TABLE] as Boolean
-                val reporterEmailsStrings = data[REPORTER_EMAILS] as List<*>
+                val lat = data[Toilet.LAT] as Double
+                val long = data[Toilet.LONG] as Double
+                val street = data[Toilet.STREET] as String
+                val houseNr = data[Toilet.HOUSE_NR] as String
+                val district = data[Toilet.DISTRICT] as String
+                val districtCode = data[Toilet.DISTRICT_CODE] as String
+                val menAccessible = data[Toilet.MEN_ACCESSIBLE] as Boolean
+                val womenAccessible = data[Toilet.WOMEN_ACCESSIBLE] as Boolean
+                val wheelchairAccessible = data[Toilet.WHEELCHAIR_ACCESSIBLE] as Boolean
+                val changingTable = data[Toilet.CHANGING_TABLE] as Boolean
+                val reporterEmailsStrings = data[Toilet.REPORTER_EMAILS] as List<*>
 
                 val reporterEmails = ArrayList<User>()
                 for (email in reporterEmailsStrings){
                     reporterEmails.add(User(email as String))
                 }
 
-                toilet = Toilet(document.id, street, district, menAccessible, womenAccessible, wheelchairAccessible, changingTable, reporterEmails)
+                toilet = Toilet(document.id, lat, long, street, houseNr, district, districtCode, menAccessible, womenAccessible, wheelchairAccessible, changingTable, reporterEmails)
 
             }else{
                 Log.e(firebaseTag, "No toilet with this id was found")
@@ -87,13 +116,17 @@ class ToiletRepository {
         }
 
         val toiletMap = hashMapOf(
-            STREET to toilet.street,
-            DISTRICT to toilet.district,
-            MEN_ACCESSIBLE to toilet.menAccessible,
-            WOMEN_ACCESSIBLE to toilet.womenAccessible,
-            WHEELCHAIR_ACCESSIBLE to toilet.wheelchairAccessible,
-            CHANGING_TABLE to toilet.changingTable,
-            REPORTER_EMAILS to emailsAsString,
+            Toilet.LAT to toilet.lat,
+            Toilet.LONG to toilet.long,
+            Toilet.STREET to toilet.street,
+            Toilet.HOUSE_NR to toilet.houseNr,
+            Toilet.DISTRICT to toilet.district,
+            Toilet.DISTRICT_CODE to toilet.districtCode,
+            Toilet.MEN_ACCESSIBLE to toilet.menAccessible,
+            Toilet.WOMEN_ACCESSIBLE to toilet.womenAccessible,
+            Toilet.WHEELCHAIR_ACCESSIBLE to toilet.wheelchairAccessible,
+            Toilet.CHANGING_TABLE to toilet.changingTable,
+            Toilet.REPORTER_EMAILS to emailsAsString,
         )
 
         // Add a new document with a generated ID
@@ -109,6 +142,50 @@ class ToiletRepository {
         return@runBlocking true
     }
 
+    fun addAllToilets(toilets : List<Toilet>) : Boolean = runBlocking{
+
+        val batch = db.batch()
+
+        for (toilet in toilets){
+            //Create new document reference
+            val docRef: DocumentReference =  db.collection(COLLECTION_TOILETS).document()
+
+            // Create a new toilet hashmap
+            val emailsAsString = ArrayList<String>()
+            for (user in toilet.reporterEmails){
+                emailsAsString.add(user.email)
+            }
+
+            val toiletMap = hashMapOf(
+                Toilet.LAT to toilet.lat,
+                Toilet.LONG to toilet.long,
+                Toilet.STREET to toilet.street,
+                Toilet.HOUSE_NR to toilet.houseNr,
+                Toilet.DISTRICT to toilet.district,
+                Toilet.DISTRICT_CODE to toilet.districtCode,
+                Toilet.MEN_ACCESSIBLE to toilet.menAccessible,
+                Toilet.WOMEN_ACCESSIBLE to toilet.womenAccessible,
+                Toilet.WHEELCHAIR_ACCESSIBLE to toilet.wheelchairAccessible,
+                Toilet.CHANGING_TABLE to toilet.changingTable,
+                Toilet.REPORTER_EMAILS to emailsAsString,
+            )
+
+            //Add to batch
+            batch.set(docRef, toiletMap)
+        }
+
+        val task = batch.commit()
+        task.await()
+
+        if (task.isSuccessful){
+            Log.d(firebaseTag, "Added multiple toilets")
+            return@runBlocking true
+        }else{
+            Log.w(firebaseTag, "Error adding toilet")
+            return@runBlocking false
+        }
+    }
+
     fun updateToilet(toilet: Toilet) : Toilet? = runBlocking{
 
         // Create a new toilet hashmap
@@ -118,16 +195,21 @@ class ToiletRepository {
         }
 
         val toiletMap : Map<String, Any> = hashMapOf(
-            STREET to toilet.street,
-            DISTRICT to toilet.district,
-            MEN_ACCESSIBLE to toilet.menAccessible,
-            WOMEN_ACCESSIBLE to toilet.womenAccessible,
-            WHEELCHAIR_ACCESSIBLE to toilet.wheelchairAccessible,
-            CHANGING_TABLE to toilet.changingTable,
-            REPORTER_EMAILS to emailsAsString,
+
+            Toilet.LAT to toilet.lat,
+            Toilet.LONG to toilet.long,
+            Toilet.STREET to toilet.street!!,
+            Toilet.HOUSE_NR to toilet.houseNr!!,
+            Toilet.DISTRICT to toilet.district!!,
+            Toilet.DISTRICT_CODE to toilet.districtCode!!,
+            Toilet.MEN_ACCESSIBLE to toilet.menAccessible,
+            Toilet.WOMEN_ACCESSIBLE to toilet.womenAccessible,
+            Toilet.WHEELCHAIR_ACCESSIBLE to toilet.wheelchairAccessible,
+            Toilet.CHANGING_TABLE to toilet.changingTable,
+            Toilet.REPORTER_EMAILS to emailsAsString,
         )
 
-        val task: Task<Void> = db.collection(COLLECTION_TOILETS).document(toilet.id).update(toiletMap)
+        val task: Task<Void> = db.collection(COLLECTION_TOILETS).document(toilet.id!!).update(toiletMap)
         task.await()
 
         if (task.isSuccessful){
@@ -155,12 +237,5 @@ class ToiletRepository {
 
     companion object {
         private val COLLECTION_TOILETS = "toilets"
-        private val STREET = "street"
-        private val DISTRICT = "district"
-        private val MEN_ACCESSIBLE = "men_accessible"
-        private val WOMEN_ACCESSIBLE = "women_accessible"
-        private val WHEELCHAIR_ACCESSIBLE = "wheelchair_accessible"
-        private val CHANGING_TABLE = "changing_accessible"
-        private val REPORTER_EMAILS = "reporter_emails"
     }
 }
