@@ -1,4 +1,4 @@
-package edu.ap.toilettime.database
+package edu.ap.toilettime.api
 
 import android.os.Handler
 import android.os.Looper
