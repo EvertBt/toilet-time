@@ -51,9 +51,7 @@ class ToiletRepository {
                 val apiHelper = APIHelper()
                 val toilets = apiHelper.getToilets()
 
-                for (toilet in toilets){
-                    addToilet(toilet)
-                }
+                addAllToilets(toilets)
 
                 Log.i(firebaseTag, "Added ${toilets.size} toilets from API")
             }
@@ -142,39 +140,43 @@ class ToiletRepository {
         return@runBlocking true
     }
 
-    fun addAllToilets(toilets : ArrayList<Toilet>) : Boolean = runBlocking{
+    fun addAllToilets(toilets : List<Toilet>) : Boolean = runBlocking{
 
         val batch = db.batch()
 
+        for (toilet in toilets){
+            //Create new document reference
+            val docRef: DocumentReference =  db.collection(COLLECTION_TOILETS).document()
 
-        // Create a new toilet hashmap
-        val emailsAsString = ArrayList<String>()
-        for (user in toilet.reporterEmails){
-            emailsAsString.add(user.email)
+            // Create a new toilet hashmap
+            val emailsAsString = ArrayList<String>()
+            for (user in toilet.reporterEmails){
+                emailsAsString.add(user.email)
+            }
+
+            val toiletMap = hashMapOf(
+                Toilet.LAT to toilet.lat,
+                Toilet.LONG to toilet.long,
+                Toilet.STREET to toilet.street,
+                Toilet.HOUSE_NR to toilet.houseNr,
+                Toilet.DISTRICT to toilet.district,
+                Toilet.DISTRICT_CODE to toilet.districtCode,
+                Toilet.MEN_ACCESSIBLE to toilet.menAccessible,
+                Toilet.WOMEN_ACCESSIBLE to toilet.womenAccessible,
+                Toilet.WHEELCHAIR_ACCESSIBLE to toilet.wheelchairAccessible,
+                Toilet.CHANGING_TABLE to toilet.changingTable,
+                Toilet.REPORTER_EMAILS to emailsAsString,
+            )
+
+            //Add to batch
+            batch.set(docRef, toiletMap)
         }
-
-        val toiletMap = hashMapOf(
-            Toilet.LAT to toilet.lat,
-            Toilet.LONG to toilet.long,
-            Toilet.STREET to toilet.street,
-            Toilet.HOUSE_NR to toilet.houseNr,
-            Toilet.DISTRICT to toilet.district,
-            Toilet.DISTRICT_CODE to toilet.districtCode,
-            Toilet.MEN_ACCESSIBLE to toilet.menAccessible,
-            Toilet.WOMEN_ACCESSIBLE to toilet.womenAccessible,
-            Toilet.WHEELCHAIR_ACCESSIBLE to toilet.wheelchairAccessible,
-            Toilet.CHANGING_TABLE to toilet.changingTable,
-            Toilet.REPORTER_EMAILS to emailsAsString,
-        )
-
-        // Add a new document with a generated ID
-        val docRef = db.collection(COLLECTION_TOILETS).add(toiletMap).await()
 
         val task = batch.commit()
         task.await()
 
         if (task.isSuccessful){
-            Log.d(firebaseTag, "Toilet added with ID: ${docRef.id}")
+            Log.d(firebaseTag, "Added multiple toilets")
             return@runBlocking true
         }else{
             Log.w(firebaseTag, "Error adding toilet")
