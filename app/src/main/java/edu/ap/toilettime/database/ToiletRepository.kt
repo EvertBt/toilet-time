@@ -2,8 +2,10 @@ package edu.ap.toilettime.database
 
 import android.util.Log
 import com.google.android.gms.tasks.Task
+import com.google.firebase.firestore.DocumentReference
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import edu.ap.toilettime.api.APIHelper
 import edu.ap.toilettime.model.Toilet
 import edu.ap.toilettime.model.User
 import kotlinx.coroutines.runBlocking
