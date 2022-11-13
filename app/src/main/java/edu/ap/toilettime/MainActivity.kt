@@ -12,7 +12,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val db = DatabaseHelper()
+        val db = ToiletRepository()
 
         //Run on new thread
         Thread{
@@ -30,9 +30,12 @@ class MainActivity : AppCompatActivity() {
 
             //Retrieve all toilets
             val toilets = db.allToilets()
-            for (t in toilets){
-                Log.i("Toilets", "Found toilet with id ${t.id}")
+            if (toilets != null){
+                for (t in toilets){
+                    Log.i("Toilets", "Found toilet with id ${t.id}")
+                }
             }
+
 
             //Get by id
             val toilet = db.getToilet("ADiLpfc5DXKlKHAIMT4a")
