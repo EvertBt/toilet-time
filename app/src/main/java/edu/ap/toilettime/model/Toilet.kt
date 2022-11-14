@@ -4,6 +4,7 @@ class Toilet (var id: String? = null, var lat: Double, var long: Double, var str
               var changingTable: Boolean, var reporterEmails: List<User> = ArrayList()) : java.io.Serializable{
 
     companion object {
+        var TOILET = "toilet"
         var ID = "id"
         var STREET = "street"
         var HOUSE_NR = "house_nr"

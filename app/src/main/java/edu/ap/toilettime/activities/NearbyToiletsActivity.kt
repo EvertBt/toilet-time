@@ -1,12 +1,16 @@
 package edu.ap.toilettime.activities
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.widget.Button
 import android.widget.ListView
+import edu.ap.toilettime.Adapters.ToiletAdapter
 import edu.ap.toilettime.R
+import edu.ap.toilettime.database.ToiletRepository
+import edu.ap.toilettime.model.Toilet
 
 class NearbyToiletsActivity : AppCompatActivity() {
     private var toiletRepository : ToiletRepository = ToiletRepository()
@@ -16,16 +20,13 @@ class NearbyToiletsActivity : AppCompatActivity() {
     companion object{
         const val EXTRA_TOILETLIST = "toilets"
 
-<<<<<<< HEAD
         /*fun nearbyToiletIntent(context: Context, toilets: ArrayList<Toilet>?): Intent{
             val toiletsIntent = Intent(context, toilets)
         }*/
-=======
         fun nearbyToiletIntent(context: Context): Intent{
             val toiletsIntent = Intent(context, NearbyToiletsActivity::class.java)
             return toiletsIntent
         }
->>>>>>> NearbyToiletsDesign
     }
 
 
@@ -33,13 +34,7 @@ class NearbyToiletsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_nearby_toilets)
 
-<<<<<<< HEAD
-        BTNBack = findViewById(R.id.btnAddToilet)
-=======
-        var toilets = toiletRepository.allToilets(false)
-
-        BTNBack = findViewById(R.id.BTNBackNearbyToilets)
->>>>>>> NearbyToiletsDesign
+        BTNBack = findViewById(R.id.btnBackNearbyToilets)
         lvToilets = findViewById(R.id.LVToilets)
 
         BTNBack.setOnClickListener {
@@ -48,10 +43,10 @@ class NearbyToiletsActivity : AppCompatActivity() {
 
         Thread{
             do{
-                toilets = toiletRepository.allToilets(false)
+                val toilets = toiletRepository.allToilets(false)
                 if(toilets != null){
                     runOnUiThread{
-                        val toiletAdapter = ToiletAdapter(this, toilets as ArrayList<Toilet>)
+                        val toiletAdapter = ToiletAdapter(this, toilets)
                         lvToilets.adapter = toiletAdapter
                     }
                 }else{
@@ -61,7 +56,7 @@ class NearbyToiletsActivity : AppCompatActivity() {
         }.start()
     }
 
-    override fun finish() : Unit {
+    override fun finish(){
         intent = Intent()
         // intent.putExtra() return needed data to add new toilet
         setResult(RESULT_OK, intent)
