@@ -1,19 +1,16 @@
 package edu.ap.toilettime.activities
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
-import android.widget.ListView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import edu.ap.toilettime.Adapters.ToiletAdapter
 import edu.ap.toilettime.R
 import edu.ap.toilettime.database.ToiletRepository
 import edu.ap.toilettime.model.Toilet
@@ -23,18 +20,22 @@ import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.ItemizedOverlay
+import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.OverlayItem
+import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
+import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.io.File
+
 
 class MainActivity : AppCompatActivity() {
     private var mMapView: MapView? = null
     private var mapController: IMapController? = null
-    private var mMyLocationOverlay: ItemizedOverlay<OverlayItem>? = null
+    private var mMyLocationOverlay: MyLocationNewOverlay? = null
     lateinit var btnAddToilet : Button
     lateinit var btnNearbyToilets : Button
     lateinit var btnRefresh : Button
     var toiletList: ArrayList<Toilet>? = ArrayList()
-    private val urlNominatim = "https://nominatim.openstreetmap.org/"
+    private val urlNominatim = "https://nominatim.openstreetmap.org/search.php?q="
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,11 +72,15 @@ class MainActivity : AppCompatActivity() {
 
         Thread{
             val db = ToiletRepository()
-            db.allToilets(true)?.let { toiletList?.addAll(it) }
+            db.allToilets()?.let { toiletList?.addAll(it) }
+
+            if (toiletList != null) {
+                initMap(hasPermissions())
+            }
         }.start()
 
         if (hasPermissions()) {
-            initMap()
+            initMap(true)
         }
         else {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -90,11 +95,21 @@ class MainActivity : AppCompatActivity() {
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
     }
 
-    fun initMap() {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 100) {
+            if (hasPermissions()) {
+                initMap(true)
+            } else {
+                initMap(false)
+            }
+        }
+    }
+
+    fun initMap(hasLocationPermission: Boolean) {
         mMapView?.setTileSource(TileSourceFactory.MAPNIK)
         // create a static ItemizedOverlay showing some markers
-        addMarker(GeoPoint(51.2162764, 4.41160291036386), "Campus Meistraat")
-        addMarker(GeoPoint(51.2196911, 4.4092625), "Campus Lange Nieuwstraat")
+        var toilets = ToiletRepository().allToilets()
         // add receiver to get location from tap
 
 
@@ -103,12 +118,26 @@ class MainActivity : AppCompatActivity() {
         //this.mMapView?.overlays?.add(miniMapOverlay)
 
         mMapView?.controller?.setZoom(17.0)
-        // default = Ellermanstraat 33
-        setCenter(GeoPoint(51.23020595, 4.41655480828479), "Campus Ellermanstraat")
+
+        if (hasLocationPermission){
+            mMyLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), mMapView)
+            mMyLocationOverlay!!.enableMyLocation()
+            mMapView!!.overlays.add(mMyLocationOverlay)
+        }else{
+            setCenter(GeoPoint(51.23020595, 4.41655480828479), "Campus Ellermanstraat")
+        }
     }
 
     private fun addMarker(geoPoint: GeoPoint, name: String) {
+        val marker = Marker(mMapView)
 
+        marker.position = geoPoint
+        marker.title = name
+        marker.icon = ContextCompat.getDrawable(this@MainActivity, android.R.drawable.btn_star_big_on)
+
+        marker.setAnchor(Marker.ANCHOR_BOTTOM, Marker.ANCHOR_CENTER)
+        mMapView?.overlays?.add(marker)
+        mMapView?.invalidate()
     }
 
     fun setCenter(geoPoint: GeoPoint, name: String) {
