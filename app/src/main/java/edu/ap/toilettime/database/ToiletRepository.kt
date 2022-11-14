@@ -16,8 +16,14 @@ class ToiletRepository {
     private val firebaseTag = "Firebase"
     private val db = Firebase.firestore
 
-    fun allToilets() : ArrayList<Toilet>? = runBlocking{
+    fun allToilets(refresh: Boolean) : ArrayList<Toilet>?{
+        if(refresh){
+            loadToilets()
+        }
+        return toilets
+    }
 
+    private fun loadToilets() : ArrayList<Toilet>? = runBlocking{
         val toiletsArrayList = ArrayList<Toilet>()
         val task = db.collection(COLLECTION_TOILETS).get()
         val document = task.await()
@@ -57,6 +63,10 @@ class ToiletRepository {
 
                 Log.i(firebaseTag, "Added ${toilets.size} toilets from API")
             }
+
+            toilets = toiletsArrayList
+
+            Log.d(firebaseTag, "Toilets loaded")
 
             return@runBlocking toiletsArrayList
 
@@ -237,5 +247,7 @@ class ToiletRepository {
 
     companion object {
         private val COLLECTION_TOILETS = "toilets"
+
+        private var toilets : ArrayList<Toilet>? = null
     }
 }

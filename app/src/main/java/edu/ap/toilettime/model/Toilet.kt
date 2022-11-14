@@ -1,7 +1,7 @@
 package edu.ap.toilettime.model
 
 class Toilet (var id: String? = null, var lat: Double, var long: Double, var street: String?, var houseNr: String?, var district: String?, var districtCode: String?, var menAccessible: Boolean, var womenAccessible: Boolean, var wheelchairAccessible: Boolean,
-              var changingTable: Boolean, var reporterEmails: List<User> = ArrayList()) {
+              var changingTable: Boolean, var reporterEmails: List<User> = ArrayList()) : java.io.Serializable{
 
     companion object {
         var ID = "id"
