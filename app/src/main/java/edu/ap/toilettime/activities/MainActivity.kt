@@ -46,16 +46,7 @@ class MainActivity : AppCompatActivity() {
 
         Thread{
             val db = ToiletRepository()
-            db.allToilets()?.let { toiletList?.addAll(it) }
-
-            if (toiletList != null) {
-
-                val lvToilets: ListView = findViewById(R.id.LVToilets)
-                val toiletAdapter = ToiletAdapter(this, toiletList!!)
-
-                lvToilets.adapter = toiletAdapter
-                //start
-            }
+            db.allToilets(true)?.let { toiletList?.addAll(it) }
         }.start()
     }
 
@@ -75,7 +66,6 @@ class MainActivity : AppCompatActivity() {
 
     fun clickBTNAddToilet(resultLauncher : ActivityResultLauncher<Intent>){
         val addToiletActivityIntent = Intent(this, AddToiletActivity::class.java)
-        //AddToiletIntent.putExtra() add all needed extras to add a new toilet
         resultLauncher.launch(addToiletActivityIntent)
     }
 
@@ -94,7 +84,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun clickBTNNearbyToilets(resultLauncher : ActivityResultLauncher<Intent>){
-        val nearbyToiletsIntent = Intent(this, NearbyToiletsActivity::class.java)
+        val nearbyToiletsIntent = NearbyToiletsActivity.nearbyToiletIntent(this)
         //AddToiletIntent.putExtra() add all needed extras to add a new toilet
         resultLauncher.launch(nearbyToiletsIntent)
     }
