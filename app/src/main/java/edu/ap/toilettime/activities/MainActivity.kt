@@ -5,14 +5,19 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
+import android.widget.ListView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import edu.ap.toilettime.Adapters.ToiletAdapter
 import edu.ap.toilettime.R
+import edu.ap.toilettime.database.ToiletRepository
+import edu.ap.toilettime.model.Toilet
 
 class MainActivity : AppCompatActivity() {
     lateinit var BTNAddToilet : Button
     lateinit var BTNNearbyToilets : Button
     lateinit var BTNToiletDetail : Button //temp: will be icons on a map
+    var toiletList: ArrayList<Toilet>? = ArrayList()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,6 +43,20 @@ class MainActivity : AppCompatActivity() {
         BTNToiletDetail.setOnClickListener {
             clickBTNToiletDetail(toiletDetailResultLauncher)
         }
+
+        Thread{
+            val db = ToiletRepository()
+            db.allToilets()?.let { toiletList?.addAll(it) }
+
+            if (toiletList != null) {
+
+                val lvToilets: ListView = findViewById(R.id.LVToilets)
+                val toiletAdapter = ToiletAdapter(this, toiletList!!)
+
+                lvToilets.adapter = toiletAdapter
+                //start
+            }
+        }.start()
     }
 
     fun CreateAddToiletResultLauncher(): ActivityResultLauncher<Intent> {

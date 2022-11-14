@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
 import edu.ap.toilettime.R
+import edu.ap.toilettime.model.Toilet
 
 class ToiletAdapter(private val context: Context,
                     private val dataSource: ArrayList<Toilet>) : BaseAdapter() {
@@ -33,7 +34,7 @@ class ToiletAdapter(private val context: Context,
 
         val toilet = getItem(position) as Toilet
 
-        TVAdress.text = toilet.adress
+        TVAdress.text = "${toilet.street} ${toilet.houseNr}, ${toilet.districtCode} ${toilet.district}"
         TVDistance.text = toilet.id //change to distance later
 
         return rowView
