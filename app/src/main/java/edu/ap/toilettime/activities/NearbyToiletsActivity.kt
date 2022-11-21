@@ -13,9 +13,10 @@ import com.google.android.material.button.MaterialButton
 import edu.ap.toilettime.Adapters.ToiletAdapter
 import edu.ap.toilettime.R
 import edu.ap.toilettime.database.ToiletFirebaseRepository
+import edu.ap.toilettime.model.Toilet
 
 class NearbyToiletsActivity : AppCompatActivity() {
-    private var toiletRepository : ToiletRepository = ToiletRepository()
+    private var toiletRepository : ToiletFirebaseRepository = ToiletFirebaseRepository()
     lateinit var btnBack : Button
 
     lateinit var btnClearFilter : Button
@@ -95,7 +96,7 @@ class NearbyToiletsActivity : AppCompatActivity() {
                 val toilets = toiletRepository.allToilets(false)
                 if(toilets != null){
                     runOnUiThread{
-                        toiletAdapter = ToiletAdapter(this, toilets as ArrayList<Toilet>)
+                        toiletAdapter = ToiletAdapter(this, toilets)
                         lvToilets.adapter = toiletAdapter as ToiletAdapter
                     }
                 }else{
