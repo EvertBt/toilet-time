@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activities.NearbyToiletsActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/NearbyToiletsTitleConstraintLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/primary_background_light"
+        android:padding="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnBackNearbyToilets"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            app:backgroundTint="@color/secondary_background"
+            app:cornerRadius="10dp"
+            app:icon="?attr/homeAsUpIndicator"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="50sp"
+            app:iconTint="@color/primary_detail"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/NearbyToiletsFilterConstraintLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:background="@color/primary_background_dark"
+        android:padding="10dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/NearbyToiletsTitleConstraintLayout"
+        app:layout_constraintVertical_bias="0.0">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/BTNFemaleFilter"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            app:backgroundTint="@color/secondary_background"
+            app:cornerRadius="10dp"
+            app:icon="?attr/homeAsUpIndicator"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="50sp"
+            app:iconTint="@color/primary_detail"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/BTNWheelchairFilter"
+            app:layout_constraintStart_toEndOf="@+id/BTNMaleFilter"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/BTNWheelchairFilter"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            app:backgroundTint="@color/secondary_background"
+            app:cornerRadius="10dp"
+            app:icon="?attr/homeAsUpIndicator"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="50sp"
+            app:iconTint="@color/primary_detail"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/BTNBabyFilter"
+            app:layout_constraintStart_toEndOf="@+id/BTNFemaleFilter"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/BTNBabyFilter"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_marginEnd="80dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            app:backgroundTint="@color/secondary_background"
+            app:cornerRadius="10dp"
+            app:icon="?attr/homeAsUpIndicator"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="50sp"
+            app:iconTint="@color/primary_detail"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/BTNWheelchairFilter"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.466" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/BTNClearFilters"
+            android:layout_width="52dp"
+            android:layout_height="52dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            app:backgroundTint="@color/secondary_background"
+            app:cornerRadius="10dp"
+            app:icon="?attr/homeAsUpIndicator"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="50sp"
+            app:iconTint="@color/primary_detail"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/BTNMaleFilter"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_marginStart="50dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            app:backgroundTint="@color/secondary_background"
+            app:cornerRadius="10dp"
+            app:icon="?attr/homeAsUpIndicator"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="50sp"
+            app:iconTint="@color/primary_detail"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/BTNFemaleFilter"
+            app:layout_constraintStart_toEndOf="@+id/BTNClearFilters"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ListView
+        android:id="@+id/LVToilets"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:backgroundTint="@color/primary_detail"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/NearbyToiletsFilterConstraintLayout" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
