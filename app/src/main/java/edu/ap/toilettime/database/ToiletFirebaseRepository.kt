@@ -11,7 +11,7 @@ import edu.ap.toilettime.model.User
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.tasks.await
 
-class ToiletRepository {
+class ToiletFirebaseRepository {
 
     private val firebaseTag = "Firebase"
     private val db = Firebase.firestore
@@ -126,8 +126,8 @@ class ToiletRepository {
         }
 
         val toiletMap = hashMapOf(
-            Toilet.LAT to toilet.lat,
-            Toilet.LONG to toilet.long,
+            Toilet.LAT to toilet.latitude,
+            Toilet.LONG to toilet.longitude,
             Toilet.STREET to toilet.street,
             Toilet.HOUSE_NR to toilet.houseNr,
             Toilet.DISTRICT to toilet.district,
@@ -167,8 +167,8 @@ class ToiletRepository {
             }
 
             val toiletMap = hashMapOf(
-                Toilet.LAT to toilet.lat,
-                Toilet.LONG to toilet.long,
+                Toilet.LAT to toilet.latitude,
+                Toilet.LONG to toilet.longitude,
                 Toilet.STREET to toilet.street,
                 Toilet.HOUSE_NR to toilet.houseNr,
                 Toilet.DISTRICT to toilet.district,
@@ -206,8 +206,8 @@ class ToiletRepository {
 
         val toiletMap : Map<String, Any> = hashMapOf(
 
-            Toilet.LAT to toilet.lat,
-            Toilet.LONG to toilet.long,
+            Toilet.LAT to toilet.latitude,
+            Toilet.LONG to toilet.longitude,
             Toilet.STREET to toilet.street!!,
             Toilet.HOUSE_NR to toilet.houseNr!!,
             Toilet.DISTRICT to toilet.district!!,
