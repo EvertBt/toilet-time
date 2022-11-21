@@ -1,8 +1,25 @@
 package edu.ap.toilettime.model
 
-class Toilet (var id: String? = null, var lat: Double, var long: Double, var street: String?, var houseNr: String?, var district: String?, var districtCode: String?, var menAccessible: Boolean, var womenAccessible: Boolean, var wheelchairAccessible: Boolean,
-              var changingTable: Boolean, var reporterEmails: List<User> = ArrayList()) : java.io.Serializable{
+import androidx.annotation.NonNull
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
+@Entity
+data class Toilet (
+    @PrimaryKey var id: String,
+    @ColumnInfo(name = "latitude") var latitude: Double,
+    @ColumnInfo(name = "longitude") var longitude: Double,
+    @ColumnInfo(name = "street") var street: String?,
+    @ColumnInfo(name = "house_nr") var houseNr: String?,
+    @ColumnInfo(name = "district") var district: String?,
+    @ColumnInfo(name = "district_code") var districtCode: String?,
+    @ColumnInfo(name = "men_accessible") var menAccessible: Boolean,
+    @ColumnInfo(name = "women_acessible") var womenAccessible: Boolean,
+    @ColumnInfo(name = "wheelchair_accessible") var wheelchairAccessible: Boolean,
+    @ColumnInfo(name = "changing_accessible") var changingTable: Boolean,
+    @ColumnInfo(name = "reporter_emails") var reporterEmails: ArrayList<User>
+){
     companion object {
         var TOILET = "toilet"
         var ID = "id"

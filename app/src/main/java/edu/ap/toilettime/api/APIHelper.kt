@@ -4,6 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import edu.ap.toilettime.model.Toilet
+import edu.ap.toilettime.model.User
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.json.JSONException
@@ -44,8 +45,9 @@ class APIHelper {
             val toiletObject = allToiletsJsonArray.getJSONObject(i).getJSONObject("attributes")
 
             val toilet = Toilet(
-                lat = getLat(allToiletsJsonArray.getJSONObject(i).getJSONObject("geometry")),
-                long = getLong(allToiletsJsonArray.getJSONObject(i).getJSONObject("geometry")),
+                id = toiletObject.getString("ID"),
+                latitude = getLat(allToiletsJsonArray.getJSONObject(i).getJSONObject("geometry")),
+                longitude = getLong(allToiletsJsonArray.getJSONObject(i).getJSONObject("geometry")),
                 street = toiletObject.getString("STRAAT"),
                 houseNr =  toiletObject.getString("HUISNUMMER"),
                 district = toiletObject.getString("DISTRICT"),
@@ -53,7 +55,8 @@ class APIHelper {
                 menAccessible = toiletObject.getString("DOELGROEP").contains("man") || toiletObject.getString("TYPE").equals("urinoir"),
                 womenAccessible = toiletObject.getString("DOELGROEP").contains("vrouw"),
                 wheelchairAccessible = toiletObject.getString("INTEGRAAL_TOEGANKELIJK").equals("ja"),
-                changingTable = toiletObject.getString("LUIERTAFEL").equals("ja")
+                changingTable = toiletObject.getString("LUIERTAFEL").equals("ja"),
+                reporterEmails = ArrayList()
             )
 
             toilets.add(toilet)
