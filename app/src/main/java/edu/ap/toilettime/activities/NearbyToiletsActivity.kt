@@ -2,16 +2,16 @@ package edu.ap.toilettime.activities
 
 import android.content.Context
 import android.content.Intent
-import android.graphics.PorterDuff
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Adapter
 import android.widget.Button
 import android.widget.ListView
-import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
 import edu.ap.toilettime.Adapters.ToiletAdapter
 import edu.ap.toilettime.R
+import edu.ap.toilettime.database.DatabaseHelper
 import edu.ap.toilettime.database.ToiletFirebaseRepository
 import edu.ap.toilettime.model.Toilet
 
@@ -33,26 +33,13 @@ class NearbyToiletsActivity : AppCompatActivity() {
     lateinit var lvToilets : ListView
     lateinit var toiletAdapter : Adapter
 
-    companion object{
-        const val EXTRA_TOILETLIST = "toilets"
-
-        /*fun nearbyToiletIntent(context: Context, toilets: ArrayList<Toilet>?): Intent{
-            val toiletsIntent = Intent(context, toilets)
-        }*/
-        fun nearbyToiletIntent(context: Context): Intent{
-            val toiletsIntent = Intent(context, NearbyToiletsActivity::class.java)
-            return toiletsIntent
-        }
-    }
-
+    var toiletList: ArrayList<Toilet> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_nearby_toilets)
 
-        var toilets = toiletRepository.allToilets(false)
-
-        btnBack = findViewById(R.id.btnBackNearbyToilets)
+        btnBack = findViewById(R.id.btnAddToilet)
 
         btnClearFilter = findViewById(R.id.btnClearFilters)
 
@@ -91,20 +78,25 @@ class NearbyToiletsActivity : AppCompatActivity() {
             SwitchChangingTableFilter()
         }
 
+        loadToiletData()
+    }
+
+    fun loadToiletData(){
         Thread{
-            do{
-                val toilets = toiletRepository.allToilets(false)
-                if(toilets != null){
-                    runOnUiThread{
-                        toiletAdapter = ToiletAdapter(this, toilets)
-                        lvToilets.adapter = toiletAdapter as ToiletAdapter
-                    }
-                }else{
-                    Thread.sleep(200)
-                }
-            }while (toilets == null)
+            toiletList = DatabaseHelper(null, this@NearbyToiletsActivity).getAllToilets()
+
+            runOnUiThread{
+                toiletAdapter = ToiletAdapter(this, toiletList)
+                lvToilets.adapter = toiletAdapter as ToiletAdapter
+            }
         }.start()
     }
+
+    //TODO on list item click ->
+    /*val toiletDetailIntent = Intent(this, MainActivity::class.java)
+    toiletDetailIntent.putExtra("lat", toilet.latitude)
+    toiletDetailIntent.putExtra("long", toilet.longitude)
+    activitylauncher.launch(toiletDetailIntent)*/
 
     private fun ClearFilters(){
         if(!btnMaleFilterActive){
@@ -179,5 +171,21 @@ class NearbyToiletsActivity : AppCompatActivity() {
         // intent.putExtra() return needed data to add new toilet
         setResult(RESULT_OK, intent)
         super.finish()
+    }
+
+    companion object{
+        const val EXTRA_TOILETLIST = "toilets"
+
+        /*fun nearbyToiletIntent(context: Context, toilets: ArrayList<Toilet>?): Intent{
+            val toiletsIntent = Intent(context, toilets)
+        }*/
+        fun nearbyToiletIntent(context: Context): Intent{
+            val toiletsIntent = Intent(context, NearbyToiletsActivity::class.java)
+            return toiletsIntent
+        }
+
+        fun onDatabaseUpdate(activity: NearbyToiletsActivity){
+            activity.loadToiletData()
+        }
     }
 }
