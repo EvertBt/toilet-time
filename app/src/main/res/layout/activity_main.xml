@@ -7,7 +7,7 @@
     tools:context=".activities.MainActivity">
 
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/BTNBackNearbyToilets"
+        android:id="@+id/btnBackNearbyToilets"
         android:layout_width="52dp"
         android:layout_height="52dp"
         android:insetLeft="0dp"

@@ -5,10 +5,8 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
-import android.widget.ListView
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import edu.ap.toilettime.Adapters.ToiletAdapter
 import edu.ap.toilettime.R
 import edu.ap.toilettime.database.ToiletRepository
 import edu.ap.toilettime.model.Toilet
@@ -24,7 +22,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        BTNAddToilet = findViewById(R.id.BTNBackNearbyToilets)
+        BTNAddToilet = findViewById(R.id.btnBackNearbyToilets)
         BTNNearbyToilets = findViewById(R.id.BTNNearbyToilets)
         BTNToiletDetail = findViewById(R.id.BTNToiletDetail)
 

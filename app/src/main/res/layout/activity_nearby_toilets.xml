@@ -7,7 +7,7 @@
     tools:context=".activities.NearbyToiletsActivity">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/NearbyToiletsTitleConstraintLayout"
+        android:id="@+id/nearbyToiletsTitleConstraintLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@color/primary_background_light"
@@ -20,14 +20,14 @@
         app:layout_constraintVertical_bias="0.0">
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/BTNBackNearbyToilets"
+            android:id="@+id/btnBackNearbyToilets"
             android:layout_width="52dp"
             android:layout_height="52dp"
             android:insetLeft="0dp"
             android:insetTop="0dp"
             android:insetRight="0dp"
             android:insetBottom="0dp"
-            app:backgroundTint="@color/secondary_background"
+            app:backgroundTint="@color/secondary_background_dark"
             app:cornerRadius="10dp"
             app:icon="?attr/homeAsUpIndicator"
             app:iconGravity="textStart"
@@ -35,15 +35,13 @@
             app:iconSize="50sp"
             app:iconTint="@color/primary_detail"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/NearbyToiletsFilterConstraintLayout"
+        android:id="@+id/nearbyToiletsFilterConstraintLayout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@color/primary_background_dark"
@@ -52,85 +50,23 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/NearbyToiletsTitleConstraintLayout"
+        app:layout_constraintTop_toBottomOf="@+id/nearbyToiletsTitleConstraintLayout"
         app:layout_constraintVertical_bias="0.0">
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/BTNFemaleFilter"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:insetLeft="0dp"
-            android:insetTop="0dp"
-            android:insetRight="0dp"
-            android:insetBottom="0dp"
-            app:backgroundTint="@color/secondary_background"
-            app:cornerRadius="10dp"
-            app:icon="?attr/homeAsUpIndicator"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp"
-            app:iconSize="50sp"
-            app:iconTint="@color/primary_detail"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/BTNWheelchairFilter"
-            app:layout_constraintStart_toEndOf="@+id/BTNMaleFilter"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/BTNWheelchairFilter"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:insetLeft="0dp"
-            android:insetTop="0dp"
-            android:insetRight="0dp"
-            android:insetBottom="0dp"
-            app:backgroundTint="@color/secondary_background"
-            app:cornerRadius="10dp"
-            app:icon="?attr/homeAsUpIndicator"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp"
-            app:iconSize="50sp"
-            app:iconTint="@color/primary_detail"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/BTNBabyFilter"
-            app:layout_constraintStart_toEndOf="@+id/BTNFemaleFilter"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/BTNBabyFilter"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:layout_marginEnd="80dp"
-            android:insetLeft="0dp"
-            android:insetTop="0dp"
-            android:insetRight="0dp"
-            android:insetBottom="0dp"
-            app:backgroundTint="@color/secondary_background"
-            app:cornerRadius="10dp"
-            app:icon="?attr/homeAsUpIndicator"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp"
-            app:iconSize="50sp"
-            app:iconTint="@color/primary_detail"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/BTNWheelchairFilter"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.466" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/BTNClearFilters"
+            android:id="@+id/btnClearFilters"
             android:layout_width="52dp"
             android:layout_height="52dp"
             android:insetLeft="0dp"
             android:insetTop="0dp"
             android:insetRight="0dp"
             android:insetBottom="0dp"
-            app:backgroundTint="@color/secondary_background"
+            app:backgroundTint="@color/secondary_background_dark"
             app:cornerRadius="10dp"
-            app:icon="?attr/homeAsUpIndicator"
+            app:icon="@mipmap/icon_clear_filter_foreground"
             app:iconGravity="textStart"
             app:iconPadding="0dp"
-            app:iconSize="50sp"
+            app:iconSize="40sp"
             app:iconTint="@color/primary_detail"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -138,7 +74,7 @@
             app:layout_constraintVertical_bias="0.0" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/BTNMaleFilter"
+            android:id="@+id/btnMaleFilter"
             android:layout_width="42dp"
             android:layout_height="42dp"
             android:layout_marginStart="50dp"
@@ -146,28 +82,92 @@
             android:insetTop="0dp"
             android:insetRight="0dp"
             android:insetBottom="0dp"
-            app:backgroundTint="@color/secondary_background"
+            app:backgroundTint="@color/secondary_background_dark"
             app:cornerRadius="10dp"
-            app:icon="?attr/homeAsUpIndicator"
+            app:icon="@mipmap/icon_male_foreground"
             app:iconGravity="textStart"
             app:iconPadding="0dp"
-            app:iconSize="50sp"
-            app:iconTint="@color/primary_detail"
+            app:iconSize="30sp"
+            app:iconTintMode="multiply"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/BTNFemaleFilter"
-            app:layout_constraintStart_toEndOf="@+id/BTNClearFilters"
+            app:layout_constraintEnd_toStartOf="@+id/btnFemaleFilter"
+            app:layout_constraintStart_toEndOf="@+id/btnClearFilters"
             app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnFemaleFilter"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            app:backgroundTint="@color/secondary_background_dark"
+            app:cornerRadius="10dp"
+            app:icon="@mipmap/icon_female_foreground"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="30sp"
+            app:iconTintMode="multiply"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnWheelchairFilter"
+            app:layout_constraintStart_toEndOf="@+id/btnMaleFilter"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnWheelchairFilter"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            app:backgroundTint="@color/secondary_background_dark"
+            app:cornerRadius="10dp"
+            app:icon="@mipmap/icon_wheelchair_foreground"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="30sp"
+            app:iconTintMode="multiply"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/btnChangingTableFilter"
+            app:layout_constraintStart_toEndOf="@+id/btnFemaleFilter"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnChangingTableFilter"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_marginEnd="80dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            app:backgroundTint="@color/secondary_background_dark"
+            app:cornerRadius="10dp"
+            app:icon="@mipmap/icon_baby_foreground"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
+            app:iconSize="30sp"
+            app:iconTintMode="multiply"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnWheelchairFilter"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.466" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ListView
-        android:id="@+id/LVToilets"
+        android:id="@+id/lvToilets"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:backgroundTint="@color/primary_detail"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/NearbyToiletsFilterConstraintLayout" />
+        app:layout_constraintTop_toBottomOf="@+id/nearbyToiletsFilterConstraintLayout"
+        app:layout_constraintVertical_bias="1.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

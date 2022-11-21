@@ -10,6 +10,9 @@
 
     <color name="primary_background_light">#da042a</color>color>
     <color name="primary_background_dark">#ae132b</color>color>
-    <color name="secondary_background">#f6923d</color>color>
+    <color name="secondary_background_dark">#f6923d</color>color>
+    <color name="secondary_background_light">#80F7913D</color>color>
     <color name="primary_detail">#fbeff0</color>color>
+
+    <color name="grayed_out_tint">#5C555555</color>color>
 </resources>
