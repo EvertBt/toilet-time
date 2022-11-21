@@ -1,6 +1,5 @@
 package edu.ap.toilettime.activities
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
@@ -9,11 +8,10 @@ import android.widget.Button
 import android.widget.ListView
 import edu.ap.toilettime.Adapters.ToiletAdapter
 import edu.ap.toilettime.R
-import edu.ap.toilettime.database.ToiletRepository
-import edu.ap.toilettime.model.Toilet
+import edu.ap.toilettime.database.ToiletFirebaseRepository
 
 class NearbyToiletsActivity : AppCompatActivity() {
-    private var toiletRepository : ToiletRepository = ToiletRepository()
+    private var toiletRepository : ToiletFirebaseRepository = ToiletFirebaseRepository()
     lateinit var BTNBack : Button
     lateinit var lvToilets : ListView
 

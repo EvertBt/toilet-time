@@ -5,7 +5,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -19,9 +18,11 @@ import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.room.Room
+import com.google.gson.Gson
 import edu.ap.toilettime.R
-import edu.ap.toilettime.database.ToiletRepository
-import edu.ap.toilettime.maps.ToiletMarker
+import edu.ap.toilettime.database.ToiletFirebaseRepository
+import edu.ap.toilettime.database.room.ToiletDatabase
 import edu.ap.toilettime.model.Toilet
 import okhttp3.*
 import org.json.JSONArray
@@ -50,6 +51,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var txtAdress : EditText
     var toiletList: ArrayList<Toilet>? = ArrayList()
     private val urlNominatim = "https://nominatim.openstreetmap.org/search.php?q="
+    private var lastLocation: GeoPoint? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,8 +98,17 @@ class MainActivity : AppCompatActivity() {
 
         loadToiletsAsync()
 
+        //Load last location from intent
+        val lat: Double? = intent.extras?.getDouble("lat")
+        val long: Double? = intent.extras?.getDouble("long")
+
+        if (lat != null && long != null){
+            Log.d("MAIN", "Found last location: ${lat} ${long}")
+            lastLocation = GeoPoint(lat, long)
+        }
+
         if (hasPermissions()) {
-            initMap(true)
+            initMap(true, lastLocation)
         }
         else {
             ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -107,16 +118,34 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadToiletsAsync(){
-        Thread{
-            val db = ToiletRepository()
-            db.allToilets(true)?.let { toiletList?.addAll(it) }
+        if (toiletList!!.isEmpty()){
+            Thread{
+                //Initialize local database
+                val localDb = Room.databaseBuilder(
+                    applicationContext,
+                    ToiletDatabase::class.java, "toilet-database"
+                ).build()
 
-            if (toiletList != null) {
-                runOnUiThread {
-                    initMap(hasPermissions())
+                val toiletDao = localDb.toiletDao()
+                toiletList?.addAll(toiletDao.getAll())
+
+                //Initialize firebase database
+                val db = ToiletFirebaseRepository()
+                db.allToilets(true)?.let {
+                    if (toiletList!!.isEmpty()){
+                        toiletDao.insertAll(it)
+                    }
+                    toiletList?.clear()
+                    toiletList?.addAll(it)
                 }
-            }
-        }.start()
+
+                if (toiletList != null) {
+                    runOnUiThread {
+                        initMap(hasPermissions(), lastLocation)
+                    }
+                }
+            }.start()
+        }
     }
 
     private fun hasPermissions(): Boolean {
@@ -129,34 +158,37 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 100) {
             if (hasPermissions()) {
-                initMap(true)
+                initMap(true, lastLocation)
             } else {
-                initMap(false)
+                initMap(false, lastLocation)
             }
         }
     }
 
-    fun initMap(hasLocationPermission: Boolean) {
+    private fun initMap(hasLocationPermission: Boolean, location: GeoPoint?) {
         mMapView?.setTileSource(TileSourceFactory.MAPNIK)
 
         // create a static ItemizedOverlay showing some markers
-        val toilets = ToiletRepository().allToilets(false)
+        val toilets = ToiletFirebaseRepository().allToilets(false)
 
         if (toilets != null){
             for(toilet: Toilet in toilets){
                 addMarker(
                     toilet,
-                    GeoPoint(toilet.lat, toilet.long), "${toilet.street} ${toilet.houseNr}, ${toilet.districtCode} ${toilet.district}",
+                    GeoPoint(toilet.latitude, toilet.longitude), "${toilet.street} ${toilet.houseNr}, ${toilet.districtCode} ${toilet.district}",
                     android.R.drawable.btn_star_big_on
                 )
             }
         }
 
-        // MiniMap
-        //val miniMapOverlay = MinimapOverlay(this, mMapView!!.tileRequestCompleteHandler)
-        //this.mMapView?.overlays?.add(miniMapOverlay)
-
         mapController!!.setZoom(19.0)
+
+        if (location != null){
+            setCenter(location, "")
+            return
+        }else{
+            Log.d("MAIN", "Location is null at map init")
+        }
 
         if (hasLocationPermission){
             mMyLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(this), mMapView)
@@ -172,11 +204,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun addMarker(toilet: Toilet?, geoPoint: GeoPoint, name: String, @DrawableRes icon: Int) {
         var marker = Marker(mMapView)
-        if (toilet != null) marker = ToiletMarker(mMapView, toilet, this)
+        //if (toilet != null) marker = ToiletMarker(mMapView, toilet, this)
 
         marker.position = geoPoint
         marker.title = name
         marker.icon = ContextCompat.getDrawable(this@MainActivity, icon)
+        marker.setInfoWindow(null)
+
+        marker.setOnMarkerClickListener { _, _ ->
+
+            Log.d("MARKER", "Tapped on marker with street ${toilet?.street}")
+            val toiletDetailIntent = Intent(this, ToiletDetailActivity::class.java)
+            toiletDetailIntent.putExtra(Toilet.TOILET, Gson().toJson(toilet))
+            startActivity(toiletDetailIntent)
+
+            return@setOnMarkerClickListener true
+        }
 
         marker.setAnchor(Marker.ANCHOR_BOTTOM, Marker.ANCHOR_CENTER)
         mMapView?.overlays?.add(marker)
