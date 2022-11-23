@@ -2,18 +2,21 @@ package edu.ap.toilettime.activities
 
 import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Adapter
+import android.widget.AdapterView
+import android.widget.AdapterView.OnItemClickListener
 import android.widget.Button
 import android.widget.ListView
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
 import edu.ap.toilettime.Adapters.ToiletAdapter
 import edu.ap.toilettime.R
 import edu.ap.toilettime.database.DatabaseHelper
 import edu.ap.toilettime.database.ToiletFirebaseRepository
 import edu.ap.toilettime.model.Toilet
+
 
 class NearbyToiletsActivity : AppCompatActivity() {
     private var toiletRepository : ToiletFirebaseRepository = ToiletFirebaseRepository()
@@ -34,6 +37,7 @@ class NearbyToiletsActivity : AppCompatActivity() {
     lateinit var toiletAdapter : Adapter
 
     var toiletList: ArrayList<Toilet> = ArrayList()
+    var toiletFilterList: ArrayList<Toilet> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +57,21 @@ class NearbyToiletsActivity : AppCompatActivity() {
         btnChangingTableFilterActive = true
 
         lvToilets = findViewById(R.id.lvToilets)
+
+        lvToilets.onItemClickListener = AdapterView.OnItemClickListener {
+            parent, view, position, id ->  
+            val selectedToilet : Toilet = parent.getItemAtPosition(position) as Toilet
+
+            Log.d("lat nearby",selectedToilet.latitude.toString())
+            Log.d("long nearby",selectedToilet.longitude.toString())
+
+            intent = Intent()
+            // intent.putExtra() return needed data to add new toilet
+            intent.putExtra("lat", selectedToilet.latitude)
+            intent.putExtra("long", selectedToilet.longitude)
+            setResult(RESULT_OK, intent)
+            super.finish()
+        }
 
         btnBack.setOnClickListener {
             this.finish()
@@ -86,7 +105,8 @@ class NearbyToiletsActivity : AppCompatActivity() {
             toiletList = DatabaseHelper(null, this@NearbyToiletsActivity).getAllToilets()
 
             runOnUiThread{
-                toiletAdapter = ToiletAdapter(this, toiletList)
+                updateFilterList()
+                toiletAdapter = ToiletAdapter(this, toiletFilterList)
                 lvToilets.adapter = toiletAdapter as ToiletAdapter
             }
         }.start()
@@ -124,7 +144,7 @@ class NearbyToiletsActivity : AppCompatActivity() {
             btnMaleFilter.icon.setTint(getColor(R.color.white))
             btnMaleFilterActive = true
         }
-
+        updateFilterList()
     }
 
     private fun SwitchFemaleFilter(){
@@ -138,6 +158,7 @@ class NearbyToiletsActivity : AppCompatActivity() {
             btnFemaleFilter.icon.setTint(getColor(R.color.white))
             btnFemaleFilterActive = true
         }
+        updateFilterList()
     }
 
     private fun SwitchWheelchairFilter(){
@@ -151,6 +172,7 @@ class NearbyToiletsActivity : AppCompatActivity() {
             btnWheelchairFilter.icon.setTint(getColor(R.color.white))
             btnWheelchairFilterActive = true
         }
+        updateFilterList()
     }
 
     private fun SwitchChangingTableFilter(){
@@ -164,6 +186,22 @@ class NearbyToiletsActivity : AppCompatActivity() {
             btnChangingTableFilter.icon.setTint(getColor(R.color.white))
             btnChangingTableFilterActive = true
         }
+        updateFilterList()
+    }
+
+    private fun updateFilterList(){
+        toiletFilterList.clear()
+        for (toilet in toiletList){
+            if ((toilet.menAccessible and btnMaleFilterActive) or
+                (toilet.womenAccessible and btnFemaleFilterActive) or
+                (toilet.wheelchairAccessible and btnWheelchairFilterActive) or
+                (toilet.changingTable and btnChangingTableFilterActive)){
+                toiletFilterList.add(toilet)
+            }
+        }
+        // update adapter
+        toiletAdapter = ToiletAdapter(this, toiletFilterList)
+        lvToilets.adapter = toiletAdapter as ToiletAdapter
     }
 
     override fun finish() : Unit {
