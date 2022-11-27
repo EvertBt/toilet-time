@@ -48,13 +48,14 @@ class NearbyToiletsActivity : AppCompatActivity() {
         btnClearFilter = findViewById(R.id.btnClearFilters)
 
         btnMaleFilter = findViewById(R.id.btnMaleFilter)
-        btnMaleFilterActive = true
+        btnMaleFilterActive = false
         btnFemaleFilter = findViewById(R.id.btnFemaleFilter)
-        btnFemaleFilterActive = true
+        btnFemaleFilterActive = false
         btnWheelchairFilter = findViewById(R.id.btnWheelchairFilter)
-        btnWheelchairFilterActive = true
+        btnWheelchairFilterActive = false
         btnChangingTableFilter = findViewById(R.id.btnChangingTableFilter)
-        btnChangingTableFilterActive = true
+        btnChangingTableFilterActive = false
+
 
         lvToilets = findViewById(R.id.lvToilets)
 
@@ -78,23 +79,23 @@ class NearbyToiletsActivity : AppCompatActivity() {
         }
 
         btnClearFilter.setOnClickListener {
-            ClearFilters()
+            clearFilters()
         }
 
         btnMaleFilter.setOnClickListener {
-            SwitchMaleFilter()
+            switchMaleFilter()
         }
 
         btnFemaleFilter.setOnClickListener {
-            SwitchFemaleFilter()
+            switchFemaleFilter()
         }
 
         btnWheelchairFilter.setOnClickListener {
-            SwitchWheelchairFilter()
+            switchWheelchairFilter()
         }
 
         btnChangingTableFilter.setOnClickListener {
-            SwitchChangingTableFilter()
+            switchChangingTableFilter()
         }
 
         loadToiletData()
@@ -118,22 +119,22 @@ class NearbyToiletsActivity : AppCompatActivity() {
     toiletDetailIntent.putExtra("long", toilet.longitude)
     activitylauncher.launch(toiletDetailIntent)*/
 
-    private fun ClearFilters(){
-        if(!btnMaleFilterActive){
-            SwitchMaleFilter()
+    private fun clearFilters(){
+        if(btnMaleFilterActive){
+            switchMaleFilter()
         }
-        if(!btnFemaleFilterActive){
-            SwitchFemaleFilter()
+        if(btnFemaleFilterActive){
+            switchFemaleFilter()
         }
-        if(!btnWheelchairFilterActive){
-            SwitchWheelchairFilter()
+        if(btnWheelchairFilterActive){
+            switchWheelchairFilter()
         }
-        if(!btnChangingTableFilterActive){
-            SwitchChangingTableFilter()
+        if(btnChangingTableFilterActive){
+            switchChangingTableFilter()
         }
     }
 
-    private fun SwitchMaleFilter(){
+    private fun switchMaleFilter(){
         if(btnMaleFilterActive){
             //Disable filter
             btnMaleFilter.icon.setTint(getColor(R.color.grayed_out_tint))
@@ -147,7 +148,7 @@ class NearbyToiletsActivity : AppCompatActivity() {
         updateFilterList()
     }
 
-    private fun SwitchFemaleFilter(){
+    private fun switchFemaleFilter(){
         if(btnFemaleFilterActive){
             //Disable filter
             btnFemaleFilter.icon.setTint(getColor(R.color.grayed_out_tint))
@@ -161,7 +162,7 @@ class NearbyToiletsActivity : AppCompatActivity() {
         updateFilterList()
     }
 
-    private fun SwitchWheelchairFilter(){
+    private fun switchWheelchairFilter(){
         if(btnWheelchairFilterActive){
             //Disable filter
             btnWheelchairFilter.icon.setTint(getColor(R.color.grayed_out_tint))
@@ -175,7 +176,7 @@ class NearbyToiletsActivity : AppCompatActivity() {
         updateFilterList()
     }
 
-    private fun SwitchChangingTableFilter(){
+    private fun switchChangingTableFilter(){
         if(btnChangingTableFilterActive){
             //Disable filter
             btnChangingTableFilter.icon.setTint(getColor(R.color.grayed_out_tint))
@@ -191,12 +192,22 @@ class NearbyToiletsActivity : AppCompatActivity() {
 
     private fun updateFilterList(){
         toiletFilterList.clear()
+        toiletFilterList.addAll(toiletList);
+        // all filters grayed out in beginning
+        // filters combine result
+        // eg. only show female AND wheelchair when those filters are active
         for (toilet in toiletList){
-            if ((toilet.menAccessible and btnMaleFilterActive) or
-                (toilet.womenAccessible and btnFemaleFilterActive) or
-                (toilet.wheelchairAccessible and btnWheelchairFilterActive) or
-                (toilet.changingTable and btnChangingTableFilterActive)){
-                toiletFilterList.add(toilet)
+            if (btnMaleFilterActive and !toilet.menAccessible){
+                toiletFilterList.remove(toilet)
+            }
+            if (btnFemaleFilterActive and !toilet.womenAccessible){
+                toiletFilterList.remove(toilet)
+            }
+            if (btnWheelchairFilterActive and !toilet.wheelchairAccessible){
+                toiletFilterList.remove(toilet)
+            }
+            if (btnChangingTableFilterActive and !toilet.changingTable){
+                toiletFilterList.remove(toilet)
             }
         }
         // update adapter
