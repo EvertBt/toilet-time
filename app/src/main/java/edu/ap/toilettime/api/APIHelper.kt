@@ -63,7 +63,7 @@ class APIHelper {
                 reporterEmails = ArrayList()
             )
 
-            if (toilet.street != null) toilets.add(toilet)
+            if (toilet.street != "null") toilets.add(toilet)
         }
 
         return toilets

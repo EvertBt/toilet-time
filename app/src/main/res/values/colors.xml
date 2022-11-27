@@ -16,4 +16,5 @@
     <color name="primary_detail">#fbeff0</color>color>
     <color name="secondary_background">#f6923d</color>color>
     <color name="grayed_out_tint">#5C555555</color>color>
+    <color name="success">#2E8E32</color>color>
 </resources>

@@ -6,6 +6,7 @@ import android.graphics.drawable.DrawableContainer
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.DrawableRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.gson.Gson
 import edu.ap.toilettime.R
@@ -23,7 +24,9 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.io.File
 
-class MapHelper(packageName: String, cachePath: String, mapView: MapView, private val activity : MainActivity) {
+class MapHelper(packageName: String, cachePath: String, mapView: MapView, private val mainActivity : MainActivity?, private val detailActivity: ToiletDetailActivity?) {
+
+    var activity: AppCompatActivity = mainActivity ?: detailActivity!!
 
     private var mMapView: MapView? = null
     private var mapController: IMapController? = null
@@ -41,7 +44,7 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
         mapController = mMapView?.controller
     }
 
-    fun initMap(hasLocationPermission: Boolean, location: GeoPoint?, toilets: ArrayList<Toilet>) {
+    fun initMap(hasLocationPermission: Boolean, location: GeoPoint?, toilets: ArrayList<Toilet>, zoom: Double = 19.0) {
         Handler(Looper.getMainLooper()).post {
 
             mMapView?.setTileSource(TileSourceFactory.MAPNIK)
@@ -54,7 +57,7 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
                 )
             }
 
-            mapController!!.setZoom(19.0)
+            mapController!!.setZoom(zoom)
 
             if (location != null){
                 setCenter(location, "")
@@ -91,15 +94,17 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
             marker.icon = ContextCompat.getDrawable(activity.applicationContext, icon)
             marker.setInfoWindow(null)
 
-            marker.setOnMarkerClickListener { _, _ ->
+            if (activity is MainActivity){
+                marker.setOnMarkerClickListener { _, _ ->
 
-                if (toilet != null){
-                    val toiletDetailIntent = Intent(activity.applicationContext, ToiletDetailActivity::class.java)
-                    toiletDetailIntent.putExtra(Toilet.TOILET, Gson().toJson(toilet))
-                    activity.toiletDetailResultLauncher.launch(toiletDetailIntent)
+                    if (toilet != null){
+                        val toiletDetailIntent = Intent(activity.applicationContext, ToiletDetailActivity::class.java)
+                        toiletDetailIntent.putExtra(Toilet.TOILET, Gson().toJson(toilet))
+                        (activity as MainActivity).toiletDetailResultLauncher.launch(toiletDetailIntent)
+                    }
+
+                    return@setOnMarkerClickListener true
                 }
-
-                return@setOnMarkerClickListener true
             }
 
             marker.setAnchor(Marker.ANCHOR_BOTTOM, Marker.ANCHOR_CENTER)
