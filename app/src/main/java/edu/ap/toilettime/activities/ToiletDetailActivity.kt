@@ -18,11 +18,4 @@ class ToiletDetailActivity : AppCompatActivity() {
         toilet = Gson().fromJson(intent.extras?.get(Toilet.TOILET).toString(), Toilet::class.java)
         Log.d("DETAIL", "Received toilet from intent: ${toilet.district}")
     }
-
-    override fun finish() {
-        val toiletDetailIntent = Intent(this, MainActivity::class.java)
-        toiletDetailIntent.putExtra("lat", toilet.latitude)
-        toiletDetailIntent.putExtra("long", toilet.longitude)
-        startActivity(toiletDetailIntent)
-    }
 }
