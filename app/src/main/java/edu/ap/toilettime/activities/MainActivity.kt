@@ -39,7 +39,7 @@ class MainActivity : AppCompatActivity() {
 
         //Get views
         setContentView(R.layout.activity_main)
-        btnAddToilet = findViewById(R.id.btnAddToilet)
+        btnAddToilet = findViewById(R.id.btnBackToiletDetail)
         btnNearbyToilets = findViewById(R.id.btnNearbyToilets)
         btnRefresh = findViewById(R.id.btnRefresh)
         btnSearch = findViewById(R.id.btnSearch)
