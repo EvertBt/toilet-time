@@ -50,7 +50,7 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
                 addMarker(
                     toilet,
                     GeoPoint(toilet.latitude, toilet.longitude), "${toilet.street} ${toilet.houseNr}, ${toilet.districtCode} ${toilet.district}",
-                    R.mipmap.icon_toilet_small_foreground
+                    R.mipmap.icon_toilet_map_foreground
                 )
             }
 

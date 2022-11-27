@@ -38,11 +38,13 @@
             android:insetTop="0dp"
             android:insetRight="0dp"
             android:insetBottom="0dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
             app:backgroundTint="@color/secondary_background"
-            app:icon="@mipmap/icon_toilet_foreground"
-            app:iconSize="20dp"
+            app:icon="@mipmap/icon_refresh_foreground"
             app:iconGravity="textStart"
             app:iconPadding="0dp"
+            app:iconSize="20dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
