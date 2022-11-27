@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
         txtAddress = findViewById(R.id.txtAdress)
 
         //Setup OSM
-        mapHelper = MapHelper(packageName, cacheDir.absolutePath, findViewById(R.id.mapview), this@MainActivity)
+        mapHelper = MapHelper(packageName, cacheDir.absolutePath, findViewById(R.id.mapview), this@MainActivity, null)
 
         //Setup result launchers
         val addToiletResultLauncher = createAddToiletResultLauncher()
@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (hasPermissions()) {
-            mapHelper.initMap(true, lastLocation, toiletList)
+            mapHelper.initMap(true, lastLocation, toiletList, 19.0)
         }else{
             ActivityCompat.requestPermissions(this, arrayOf(
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -102,9 +102,9 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 100) {
             if (hasPermissions()) {
-                mapHelper.initMap(true, lastLocation, toiletList)
+                mapHelper.initMap(true, lastLocation, toiletList, 19.0)
             } else {
-                mapHelper.initMap(false, lastLocation, toiletList)
+                mapHelper.initMap(false, lastLocation, toiletList, 19.0)
             }
         }
     }
@@ -116,7 +116,7 @@ class MainActivity : AppCompatActivity() {
             Log.d("MAIN", "returning ${toiletList.size} toilets from local database")
 
             if (toiletList.isNotEmpty()) {
-                mapHelper.initMap(hasPermissions(), lastLocation, toiletList)
+                mapHelper.initMap(hasPermissions(), lastLocation, toiletList, 19.0)
             }
         }.start()
     }

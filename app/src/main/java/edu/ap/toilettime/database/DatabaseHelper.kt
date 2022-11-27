@@ -10,7 +10,7 @@ import edu.ap.toilettime.model.Toilet
 
 class DatabaseHelper(private val mainActivity: MainActivity?, private val nearbyToiletsActivity: NearbyToiletsActivity?) {
 
-    var activity: AppCompatActivity = mainActivity ?: nearbyToiletsActivity!!
+    var activity: AppCompatActivity? = mainActivity ?: nearbyToiletsActivity
 
     fun getAllToilets(): ArrayList<Toilet>{
 
@@ -21,11 +21,15 @@ class DatabaseHelper(private val mainActivity: MainActivity?, private val nearby
         return getLocalToilets()
     }
 
+    fun updateToilet(toilet: Toilet){
+        //TODO
+    }
+
     private fun getLocalToilets(): ArrayList<Toilet>{
 
         val toiletList = ArrayList<Toilet>()
         val localDb = Room.databaseBuilder(
-            activity.applicationContext,
+            activity!!.applicationContext,
             ToiletDatabase::class.java, "toilet-database"
         ).build()
 
@@ -57,7 +61,7 @@ class DatabaseHelper(private val mainActivity: MainActivity?, private val nearby
             Log.d("DATABASEHELPER", "${updatedToilets.size} toilets need to be updated!")
 
             val localDb = Room.databaseBuilder(
-                activity.applicationContext,
+                activity!!.applicationContext,
                 ToiletDatabase::class.java, "toilet-database"
             ).build()
 
