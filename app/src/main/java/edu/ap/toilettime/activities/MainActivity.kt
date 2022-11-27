@@ -163,7 +163,16 @@ class MainActivity : AppCompatActivity() {
                     val data: Intent? = result.data
                     val extras = data?.extras
                     if (extras != null) {
-                        // code to do when coming back from intent (here you add the new toilet)
+                        // code to do when coming back from intent
+                        Log.d("Nearby intent","hello there")
+                        val lat: Double = extras.getDouble("lat")
+                        val long: Double = extras.getDouble("long")
+
+                        Log.d("lat", lat.toString())
+                        Log.d("long", long.toString())
+
+                        val location = GeoPoint(lat, long)
+                        mapHelper.initMap(hasPermissions(), location, toiletList)
                     }
                 }
             }
