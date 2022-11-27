@@ -2,11 +2,13 @@ package edu.ap.toilettime.maps
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.DrawableContainer
 import android.os.Handler
 import android.os.Looper
 import androidx.annotation.DrawableRes
 import androidx.core.content.ContextCompat
 import com.google.gson.Gson
+import edu.ap.toilettime.R
 import edu.ap.toilettime.activities.MainActivity
 import edu.ap.toilettime.activities.ToiletDetailActivity
 import edu.ap.toilettime.database.ToiletFirebaseRepository
@@ -48,7 +50,7 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
                 addMarker(
                     toilet,
                     GeoPoint(toilet.latitude, toilet.longitude), "${toilet.street} ${toilet.houseNr}, ${toilet.districtCode} ${toilet.district}",
-                    android.R.drawable.btn_star_big_on
+                    R.mipmap.icon_toilet_map_foreground
                 )
             }
 

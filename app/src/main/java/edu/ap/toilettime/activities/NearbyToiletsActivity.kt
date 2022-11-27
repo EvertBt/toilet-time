@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
 import android.widget.Adapter
 import android.widget.Button
 import android.widget.ListView
@@ -34,12 +33,13 @@ class NearbyToiletsActivity : AppCompatActivity() {
     lateinit var toiletAdapter : Adapter
 
     var toiletList: ArrayList<Toilet> = ArrayList()
+    var toiletFilterList: ArrayList<Toilet> = ArrayList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_nearby_toilets)
 
-        btnBack = findViewById(R.id.btnAddToilet)
+        btnBack = findViewById(R.id.btnBackNearbyToilets)
 
         btnClearFilter = findViewById(R.id.btnClearFilters)
 
