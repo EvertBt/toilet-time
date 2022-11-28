@@ -2,6 +2,7 @@ package edu.ap.toilettime.database
 
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.room.Dao
 import androidx.room.Room
 import edu.ap.toilettime.activities.MainActivity
 import edu.ap.toilettime.activities.NearbyToiletsActivity
@@ -17,6 +18,23 @@ class DatabaseHelper(private val activity: AppCompatActivity) {
         }.start()
 
         return getLocalToilets()
+    }
+
+    fun addToilet(toilet: Toilet){
+
+        //Local database
+        val localDb = Room.databaseBuilder(
+            activity.applicationContext,
+            ToiletDatabase::class.java, "toilet-database"
+        ).build()
+
+        val toiletDao = localDb.toiletDao()
+        toiletDao.insertOne(toilet)
+        localDb.close()
+        
+        //Firebase
+        val db = ToiletFirebaseRepository()
+        db.addToilet(toilet)
     }
 
     fun updateToilet(toilet: Toilet){
