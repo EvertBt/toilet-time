@@ -16,6 +16,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.material.button.MaterialButton
+import edu.ap.toilettime.Adapters.ToiletAdapter
 import edu.ap.toilettime.R
 import edu.ap.toilettime.api.APIHelper
 import edu.ap.toilettime.database.DatabaseHelper
@@ -32,7 +34,17 @@ class MainActivity : AppCompatActivity() {
     lateinit var mapHelper: MapHelper
     lateinit var toiletDetailResultLauncher: ActivityResultLauncher<Intent>
     private var toiletList: ArrayList<Toilet> = ArrayList()
+    var toiletFilterList: ArrayList<Toilet> = ArrayList()
     private var lastLocation: GeoPoint? = null
+
+    lateinit var btnMaleFilter : MaterialButton
+    var btnMaleFilterActive : Boolean = false
+    lateinit var btnFemaleFilter : MaterialButton
+    var btnFemaleFilterActive : Boolean = false
+    lateinit var btnWheelchairFilter : MaterialButton
+    var btnWheelchairFilterActive : Boolean = false
+    lateinit var btnChangingTableFilter : MaterialButton
+    var btnChangingTableFilterActive : Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,6 +56,15 @@ class MainActivity : AppCompatActivity() {
         btnRefresh = findViewById(R.id.btnRefresh)
         btnSearch = findViewById(R.id.btnSearch)
         txtAddress = findViewById(R.id.txtAdress)
+
+        btnMaleFilter = findViewById(R.id.btnMaleFilter)
+        btnMaleFilterActive = false
+        btnFemaleFilter = findViewById(R.id.btnFemaleFilter)
+        btnFemaleFilterActive = false
+        btnWheelchairFilter = findViewById(R.id.btnWheelchairFilter)
+        btnWheelchairFilterActive = false
+        btnChangingTableFilter = findViewById(R.id.btnChangingTableFilter)
+        btnChangingTableFilterActive = false
 
         //Setup OSM
         mapHelper = MapHelper(packageName, cacheDir.absolutePath, findViewById(R.id.mapview), this@MainActivity, null)
@@ -63,10 +84,27 @@ class MainActivity : AppCompatActivity() {
 
         btnRefresh.setOnClickListener {
             loadToiletData()
+            clearFilters()
         }
 
         btnSearch.setOnClickListener {
             searchLocation(txtAddress.text.toString())
+        }
+
+        btnMaleFilter.setOnClickListener {
+            switchMaleFilter()
+        }
+
+        btnFemaleFilter.setOnClickListener {
+            switchFemaleFilter()
+        }
+
+        btnWheelchairFilter.setOnClickListener {
+            switchWheelchairFilter()
+        }
+
+        btnChangingTableFilter.setOnClickListener {
+            switchChangingTableFilter()
         }
 
         //Load toilets from database
@@ -141,6 +179,104 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun clearFilters(){
+        if(btnMaleFilterActive){
+            switchMaleFilter()
+        }
+        if(btnFemaleFilterActive){
+            switchFemaleFilter()
+        }
+        if(btnWheelchairFilterActive){
+            switchWheelchairFilter()
+        }
+        if(btnChangingTableFilterActive){
+            switchChangingTableFilter()
+        }
+    }
+
+    private fun switchMaleFilter(){
+        if(btnMaleFilterActive){
+            //Disable filter
+            btnMaleFilter.icon.setTint(getColor(R.color.grayed_out_tint))
+            btnMaleFilterActive = false
+        }
+        else {
+            //Enable filter
+            btnMaleFilter.icon.setTint(getColor(R.color.white))
+            btnMaleFilterActive = true
+        }
+        updateFilterList()
+    }
+
+    private fun switchFemaleFilter(){
+        if(btnFemaleFilterActive){
+            //Disable filter
+            btnFemaleFilter.icon.setTint(getColor(R.color.grayed_out_tint))
+            btnFemaleFilterActive = false
+        }
+        else {
+            //Enable filter
+            btnFemaleFilter.icon.setTint(getColor(R.color.white))
+            btnFemaleFilterActive = true
+        }
+        updateFilterList()
+    }
+
+    private fun switchWheelchairFilter(){
+        if(btnWheelchairFilterActive){
+            //Disable filter
+            btnWheelchairFilter.icon.setTint(getColor(R.color.grayed_out_tint))
+            btnWheelchairFilterActive = false
+        }
+        else {
+            //Enable filter
+            btnWheelchairFilter.icon.setTint(getColor(R.color.white))
+            btnWheelchairFilterActive = true
+        }
+        updateFilterList()
+    }
+
+    private fun switchChangingTableFilter(){
+        if(btnChangingTableFilterActive){
+            //Disable filter
+            btnChangingTableFilter.icon.setTint(getColor(R.color.grayed_out_tint))
+            btnChangingTableFilterActive = false
+        }
+        else {
+            //Enable filter
+            btnChangingTableFilter.icon.setTint(getColor(R.color.white))
+            btnChangingTableFilterActive = true
+        }
+        updateFilterList()
+    }
+
+    private fun updateFilterList(){
+        toiletFilterList.clear()
+        toiletFilterList.addAll(toiletList);
+        // all filters grayed out in beginning
+        // filters combine result
+        // eg. only show female AND wheelchair when those filters are active
+        for (toilet in toiletList){
+            if (btnMaleFilterActive and !toilet.menAccessible){
+                toiletFilterList.remove(toilet)
+            }
+            if (btnFemaleFilterActive and !toilet.womenAccessible){
+                toiletFilterList.remove(toilet)
+            }
+            if (btnWheelchairFilterActive and !toilet.wheelchairAccessible){
+                toiletFilterList.remove(toilet)
+            }
+            if (btnChangingTableFilterActive and !toilet.changingTable){
+                toiletFilterList.remove(toilet)
+            }
+        }
+        // redraw toilet icons on map
+        mapHelper.clearMarkers()
+        for (toilet in toiletFilterList){
+            mapHelper.addMarker(toilet, GeoPoint(toilet.latitude, toilet.longitude), "", R.mipmap.icon_toilet_map_larger)
+        }
+    }
+
     private fun createAddToiletResultLauncher(): ActivityResultLauncher<Intent> {
         val resultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -168,15 +304,19 @@ class MainActivity : AppCompatActivity() {
                     val extras = data?.extras
                     if (extras != null) {
                         // code to do when coming back from intent
-                        Log.d("Nearby intent","hello there")
                         val lat: Double = extras.getDouble("lat")
                         val long: Double = extras.getDouble("long")
 
-                        Log.d("lat", lat.toString())
-                        Log.d("long", long.toString())
-
                         val location = GeoPoint(lat, long)
+
                         mapHelper.initMap(hasPermissions(), location, toiletList, 19.0)
+
+                        btnMaleFilterActive = extras.getBoolean("MALE-FILTER", false)
+                        btnFemaleFilterActive = extras.getBoolean("FEMALE-FILTER", false)
+                        btnWheelchairFilterActive = extras.getBoolean("WHEELCHAIR-FILTER", false)
+                        btnChangingTableFilterActive = extras.getBoolean("CHANGING-TABLE-FILTER", false)
+
+                        checkFilters(btnMaleFilterActive, btnFemaleFilterActive, btnWheelchairFilterActive, btnChangingTableFilterActive)
                     }
                 }
             }
@@ -186,7 +326,40 @@ class MainActivity : AppCompatActivity() {
     private fun clickBTNNearbyToilets(resultLauncher : ActivityResultLauncher<Intent>){
         val nearbyToiletsIntent = NearbyToiletsActivity.nearbyToiletIntent(this)
         //AddToiletIntent.putExtra() add all needed extras to add a new toilet
+        nearbyToiletsIntent.putExtra("MALE-FILTER", btnMaleFilterActive)
+        nearbyToiletsIntent.putExtra("FEMALE-FILTER", btnFemaleFilterActive)
+        nearbyToiletsIntent.putExtra("WHEELCHAIR-FILTER", btnWheelchairFilterActive)
+        nearbyToiletsIntent.putExtra("CHANGING-TABLE-FILTER", btnChangingTableFilterActive)
         resultLauncher.launch(nearbyToiletsIntent)
+    }
+
+    private fun checkFilters(maleFilter: Boolean, femaleFilter: Boolean, wheelchairFilter: Boolean, changingTableFilter: Boolean){
+        if(maleFilter){
+            btnMaleFilter.icon.setTint(getColor(R.color.white))
+        }
+        else{
+            btnMaleFilter.icon.setTint(getColor(R.color.grayed_out_tint))
+        }
+        if(femaleFilter){
+            btnFemaleFilter.icon.setTint(getColor(R.color.white))
+        }
+        else{
+            btnFemaleFilter.icon.setTint(getColor(R.color.grayed_out_tint))
+        }
+        if(wheelchairFilter){
+            btnWheelchairFilter.icon.setTint(getColor(R.color.white))
+        }
+        else{
+            btnWheelchairFilter.icon.setTint(getColor(R.color.grayed_out_tint))
+        }
+        if(changingTableFilter){
+            btnChangingTableFilter.icon.setTint(getColor(R.color.white))
+        }
+        else{
+            btnChangingTableFilter.icon.setTint(getColor(R.color.grayed_out_tint))
+        }
+
+        updateFilterList()
     }
 
     private fun createToiletDetailResultLauncher(): ActivityResultLauncher<Intent> {

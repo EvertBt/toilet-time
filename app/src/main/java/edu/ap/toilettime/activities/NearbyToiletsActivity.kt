@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Adapter
 import android.widget.AdapterView
-import android.widget.AdapterView.OnItemClickListener
 import android.widget.Button
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
@@ -14,12 +13,10 @@ import com.google.android.material.button.MaterialButton
 import edu.ap.toilettime.Adapters.ToiletAdapter
 import edu.ap.toilettime.R
 import edu.ap.toilettime.database.DatabaseHelper
-import edu.ap.toilettime.database.ToiletFirebaseRepository
 import edu.ap.toilettime.model.Toilet
 
 
 class NearbyToiletsActivity : AppCompatActivity() {
-    private var toiletRepository : ToiletFirebaseRepository = ToiletFirebaseRepository()
     lateinit var btnBack : Button
 
     lateinit var btnClearFilter : Button
@@ -48,19 +45,14 @@ class NearbyToiletsActivity : AppCompatActivity() {
         btnClearFilter = findViewById(R.id.btnClearFilters)
 
         btnMaleFilter = findViewById(R.id.btnMaleFilter)
-        btnMaleFilterActive = false
         btnFemaleFilter = findViewById(R.id.btnFemaleFilter)
-        btnFemaleFilterActive = false
         btnWheelchairFilter = findViewById(R.id.btnWheelchairFilter)
-        btnWheelchairFilterActive = false
         btnChangingTableFilter = findViewById(R.id.btnChangingTableFilter)
-        btnChangingTableFilterActive = false
-
 
         lvToilets = findViewById(R.id.lvToilets)
 
         lvToilets.onItemClickListener = AdapterView.OnItemClickListener {
-            parent, view, position, id ->  
+            parent, view, position, id ->
             val selectedToilet : Toilet = parent.getItemAtPosition(position) as Toilet
 
             Log.d("lat nearby",selectedToilet.latitude.toString())
@@ -70,11 +62,13 @@ class NearbyToiletsActivity : AppCompatActivity() {
             // intent.putExtra() return needed data to add new toilet
             intent.putExtra("lat", selectedToilet.latitude)
             intent.putExtra("long", selectedToilet.longitude)
+
             setResult(RESULT_OK, intent)
-            super.finish()
+            finish()
         }
 
         btnBack.setOnClickListener {
+            intent = Intent()
             this.finish()
         }
 
@@ -106,6 +100,7 @@ class NearbyToiletsActivity : AppCompatActivity() {
             toiletList = DatabaseHelper(null, this@NearbyToiletsActivity).getAllToilets()
 
             runOnUiThread{
+                checkFilters()
                 updateFilterList()
                 toiletAdapter = ToiletAdapter(this, toiletFilterList)
                 lvToilets.adapter = toiletAdapter as ToiletAdapter
@@ -113,11 +108,26 @@ class NearbyToiletsActivity : AppCompatActivity() {
         }.start()
     }
 
-    //TODO on list item click ->
-    /*val toiletDetailIntent = Intent(this, MainActivity::class.java)
-    toiletDetailIntent.putExtra("lat", toilet.latitude)
-    toiletDetailIntent.putExtra("long", toilet.longitude)
-    activitylauncher.launch(toiletDetailIntent)*/
+    private fun checkFilters(){
+        btnMaleFilterActive = intent.getBooleanExtra("MALE-FILTER", false)
+        if(btnMaleFilterActive){
+            btnMaleFilter.icon.setTint(getColor(R.color.white))
+        }
+        btnFemaleFilterActive = intent.getBooleanExtra("FEMALE-FILTER", false)
+        if(btnFemaleFilterActive){
+            Log.d("female filter", "changing to on")
+            btnFemaleFilter.icon.setTint(getColor(R.color.white))
+        }
+        btnWheelchairFilterActive = intent.getBooleanExtra("WHEELCHAIR-FILTER", false)
+        if(btnWheelchairFilterActive){
+            btnWheelchairFilter.icon.setTint(getColor(R.color.white))
+        }
+        btnChangingTableFilterActive = intent.getBooleanExtra("CHANGING-TABLE-FILTER", false)
+        if(btnChangingTableFilterActive){
+            btnChangingTableFilter.icon.setTint(getColor(R.color.white))
+        }
+
+    }
 
     private fun clearFilters(){
         if(btnMaleFilterActive){
@@ -216,8 +226,13 @@ class NearbyToiletsActivity : AppCompatActivity() {
     }
 
     override fun finish() : Unit {
-        intent = Intent()
+        //intent = Intent()
         // intent.putExtra() return needed data to add new toilet
+        intent.putExtra("MALE-FILTER", btnMaleFilterActive)
+        intent.putExtra("FEMALE-FILTER", btnFemaleFilterActive)
+        intent.putExtra("WHEELCHAIR-FILTER", btnWheelchairFilterActive)
+        intent.putExtra("CHANGING-TABLE-FILTER", btnChangingTableFilterActive)
+
         setResult(RESULT_OK, intent)
         super.finish()
     }
