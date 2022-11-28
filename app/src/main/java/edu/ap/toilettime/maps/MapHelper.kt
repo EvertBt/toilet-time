@@ -2,11 +2,15 @@ package edu.ap.toilettime.maps
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.DrawableContainer
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.annotation.DrawableRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.gson.Gson
+import edu.ap.toilettime.R
 import edu.ap.toilettime.activities.MainActivity
 import edu.ap.toilettime.activities.ToiletDetailActivity
 import edu.ap.toilettime.database.ToiletFirebaseRepository
@@ -21,7 +25,9 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.io.File
 
-class MapHelper(packageName: String, cachePath: String, mapView: MapView, private val activity : MainActivity) {
+class MapHelper(packageName: String, cachePath: String, mapView: MapView, mainActivity : MainActivity?, detailActivity: ToiletDetailActivity?) {
+
+    var activity: AppCompatActivity = mainActivity ?: detailActivity!!
 
     private var mMapView: MapView? = null
     private var mapController: IMapController? = null
@@ -39,7 +45,7 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
         mapController = mMapView?.controller
     }
 
-    fun initMap(hasLocationPermission: Boolean, location: GeoPoint?, toilets: ArrayList<Toilet>) {
+    fun initMap(hasLocationPermission: Boolean, location: GeoPoint?, toilets: ArrayList<Toilet>, zoom: Double = 19.0) {
         Handler(Looper.getMainLooper()).post {
 
             mMapView?.setTileSource(TileSourceFactory.MAPNIK)
@@ -48,11 +54,11 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
                 addMarker(
                     toilet,
                     GeoPoint(toilet.latitude, toilet.longitude), "${toilet.street} ${toilet.houseNr}, ${toilet.districtCode} ${toilet.district}",
-                    android.R.drawable.btn_star_big_on
+                    R.mipmap.icon_toilet_map_larger
                 )
             }
 
-            mapController!!.setZoom(19.0)
+            mapController!!.setZoom(zoom)
 
             if (location != null){
                 setCenter(location, "")
@@ -70,6 +76,7 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
                 mMyLocationOverlay!!.enableMyLocation()
                 mMyLocationOverlay!!.runOnFirstFix{
                     Handler(Looper.getMainLooper()).post {
+                        Log.d("MAP", "Animating to own location: ${mMyLocationOverlay!!.myLocation}")
                         mapController!!.animateTo(mMyLocationOverlay!!.myLocation)
                     }
                 }
@@ -89,21 +96,27 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
             marker.icon = ContextCompat.getDrawable(activity.applicationContext, icon)
             marker.setInfoWindow(null)
 
-            marker.setOnMarkerClickListener { _, _ ->
+            if (activity is MainActivity){
+                marker.setOnMarkerClickListener { _, _ ->
 
-                if (toilet != null){
-                    val toiletDetailIntent = Intent(activity.applicationContext, ToiletDetailActivity::class.java)
-                    toiletDetailIntent.putExtra(Toilet.TOILET, Gson().toJson(toilet))
-                    activity.toiletDetailResultLauncher.launch(toiletDetailIntent)
+                    if (toilet != null){
+                        val toiletDetailIntent = Intent(activity.applicationContext, ToiletDetailActivity::class.java)
+                        toiletDetailIntent.putExtra(Toilet.TOILET, Gson().toJson(toilet))
+                        (activity as MainActivity).toiletDetailResultLauncher.launch(toiletDetailIntent)
+                    }
+
+                    return@setOnMarkerClickListener true
                 }
-
-                return@setOnMarkerClickListener true
             }
 
             marker.setAnchor(Marker.ANCHOR_BOTTOM, Marker.ANCHOR_CENTER)
             mMapView?.overlays?.add(marker)
             mMapView?.invalidate()
         }
+    }
+
+    fun clearMarkers(){
+        mMapView?.overlays?.forEach { (it as? Marker)?.remove(mMapView) }
     }
 
     fun setCenter(geoPoint: GeoPoint, name: String) {

@@ -43,7 +43,7 @@ class NearbyToiletsActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_nearby_toilets)
 
-        btnBack = findViewById(R.id.btnAddToilet)
+        btnBack = findViewById(R.id.btnBackNearbyToilets)
 
         btnClearFilter = findViewById(R.id.btnClearFilters)
 

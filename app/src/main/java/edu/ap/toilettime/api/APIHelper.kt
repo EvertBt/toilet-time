@@ -4,12 +4,9 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.View
-import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import edu.ap.toilettime.maps.MapHelper
 import edu.ap.toilettime.model.Toilet
-import edu.ap.toilettime.model.User
 import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONException
@@ -34,7 +31,7 @@ class APIHelper {
     fun getToilets() : List<Toilet>{
 
         val url = URL("https://geodata.antwerpen.be/arcgissql/rest/services/P_Portal/portal_publiek1/MapServer/8/query?where=1%3D1&outFields=*&outSR=4326&f=json")
-        var result : String? = null
+        val result : String?
         val myHandler = Handler(Looper.getMainLooper())
 
         myHandler.post{
@@ -66,7 +63,7 @@ class APIHelper {
                 reporterEmails = ArrayList()
             )
 
-            toilets.add(toilet)
+            if (toilet.street != "null" && toilet.houseNr != "null" && toilet.district != "null") toilets.add(toilet)
         }
 
         return toilets
@@ -84,7 +81,7 @@ class APIHelper {
         }
     }
 
-    fun getLong(obj: JSONObject) : Double{
+    private fun getLong(obj: JSONObject) : Double{
 
         return try {
             val latString = obj.getJSONObject("x").getString("value")
