@@ -113,7 +113,7 @@ class ToiletFirebaseRepository {
         return@runBlocking toilet
     }
 
-    fun addToilet(toilet : Toilet) : Boolean = runBlocking{
+    fun addToilet(toilet : Toilet) : String? = runBlocking{
 
         // Create a new toilet hashmap
         val emailsAsString = ArrayList<String>()
@@ -143,10 +143,10 @@ class ToiletFirebaseRepository {
             Log.d(firebaseTag, "Toilet added with ID: ${docRef.id}")
         } else {
             Log.w(firebaseTag, "Error adding toilet")
-            return@runBlocking false
+            return@runBlocking null
         }
 
-        return@runBlocking true
+        return@runBlocking docRef.id
     }
 
     fun addAllToilets(toilets : List<Toilet>) : Boolean = runBlocking{

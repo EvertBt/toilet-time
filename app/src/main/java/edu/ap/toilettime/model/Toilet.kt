@@ -23,6 +23,7 @@ data class Toilet (
 ){
     companion object {
         var TOILET = "toilet"
+        var LOCATION = "location"
         var ID = "id"
         var ADDED_BY = "added_by"
         var STREET = "street"

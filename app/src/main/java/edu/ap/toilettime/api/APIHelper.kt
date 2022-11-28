@@ -8,8 +8,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import edu.ap.toilettime.activities.AddToiletActivity
 import edu.ap.toilettime.maps.MapHelper
+import edu.ap.toilettime.model.Address
 import edu.ap.toilettime.model.Toilet
-import kotlinx.coroutines.runBlocking
 import okhttp3.*
 import org.json.JSONArray
 import org.json.JSONException
@@ -137,38 +137,41 @@ class APIHelper {
         }.start()
     }
 
-    fun searchAddress(location: GeoPoint, ctx: Context, activity: AppCompatActivity){
+    fun searchAddress(location: GeoPoint, activity: AppCompatActivity){
 
         //Get address location async from API
         Thread{
             val client = OkHttpClient()
-            val request = Request.Builder().url(URL("https://nominatim.openstreetmap.org/reverse.php?lat=${location.latitude}&lon=${location.longitude}&zoom=18&format=jsonv2")).build()
+            val request = Request.Builder().url(URL("https://nominatim.openstreetmap.org/reverse.php?lat=${location.latitude}&lon=${location.longitude}&format=jsonv2")).build()
             val myHandler = Handler(Looper.getMainLooper())
 
             client.newCall(request).enqueue(object : Callback {
 
                 override fun onFailure(call: Call, e: IOException) {
                     myHandler.post {
-                        Toast.makeText(ctx,"There was a problem trying to get address data, please try again.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(activity.applicationContext,"Error: There was a problem getting the address", Toast.LENGTH_LONG).show()
                     }
                 }
 
                 override fun onResponse(call: Call, response: Response) {
                     try{
-                        val jObject : JSONObject = JSONArray(response.body!!.string()).getJSONObject(0).getJSONObject("address")
+                        val jObject : JSONObject = JSONObject(response.body!!.string()).getJSONObject("address")
                         val street : String = jObject.getString("road")
                         val houseNr : String = jObject.getString("house_number")
                         val city : String = jObject.getString("city")
                         val districtCode : String = jObject.getString("postcode")
 
                         if (activity is AddToiletActivity){
-                            activity.updateAddress("${street} ${houseNr}, ${districtCode} ${city}")
+                            Handler(Looper.getMainLooper()).post{
+                                activity.updateAddress(Address(street, houseNr, city, districtCode))
+                            }
                         }
 
-                    }catch (_: Exception){
+                    }catch (e: Exception){
                         myHandler.post {
-                            Toast.makeText(ctx, "Address does not exist", Toast.LENGTH_LONG).show()
+                            Toast.makeText(activity.applicationContext, "There was a problem getting the address", Toast.LENGTH_LONG).show()
                         }
+                        Log.e("API", e.stackTraceToString())
                     }
                 }
             })
