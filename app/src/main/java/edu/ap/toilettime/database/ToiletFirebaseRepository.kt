@@ -16,14 +16,7 @@ class ToiletFirebaseRepository {
     private val firebaseTag = "Firebase"
     private val db = Firebase.firestore
 
-    fun allToilets(refresh: Boolean) : ArrayList<Toilet>?{
-        if(refresh){
-            loadToilets()
-        }
-        return toilets
-    }
-
-    private fun loadToilets() : ArrayList<Toilet>? = runBlocking{
+    fun allToilets() : ArrayList<Toilet>? = runBlocking{
         val toiletsArrayList = ArrayList<Toilet>()
         val task = db.collection(COLLECTION_TOILETS).get()
         val document = task.await()

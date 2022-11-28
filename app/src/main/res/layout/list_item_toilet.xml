@@ -6,7 +6,7 @@
     android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/CLListItem"
+        android:id="@+id/clListItem"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="10dp"
@@ -16,7 +16,7 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
-            android:id="@+id/TVAdress"
+            android:id="@+id/tvAdress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="TextView"
@@ -31,11 +31,11 @@
             android:layout_marginTop="10dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/TVAdress"
+            app:layout_constraintTop_toBottomOf="@+id/tvAdress"
             app:layout_constraintVertical_bias="0.0">
 
             <ImageView
-                android:id="@+id/IconMale"
+                android:id="@+id/icMenAccesible"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -44,41 +44,41 @@
                 app:srcCompat="@mipmap/icon_male_foreground" />
 
             <ImageView
-                android:id="@+id/iconFemale"
+                android:id="@+id/icWomenAccesible"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginStart="20dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/IconMale"
+                app:layout_constraintStart_toEndOf="@+id/icMenAccesible"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@mipmap/icon_female_foreground" />
 
             <ImageView
-                android:id="@+id/iconWheelchair"
+                android:id="@+id/icWheelchairAccesible"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginStart="20dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@+id/iconFemale"
+                app:layout_constraintStart_toEndOf="@+id/icWomenAccesible"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@mipmap/icon_wheelchair_foreground" />
 
             <ImageView
-                android:id="@+id/iconBaby"
+                android:id="@+id/icChangingTable"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_marginStart="20dp"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="1.0"
-                app:layout_constraintStart_toEndOf="@+id/iconWheelchair"
+                app:layout_constraintStart_toEndOf="@+id/icWheelchairAccesible"
                 app:layout_constraintTop_toTopOf="parent"
                 app:layout_constraintVertical_bias="0.0"
                 app:srcCompat="@mipmap/icon_baby_foreground" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
         <TextView
-            android:id="@+id/TVDistance"
+            android:id="@+id/tvDistance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="TextView"

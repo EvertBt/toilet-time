@@ -38,10 +38,13 @@
             android:insetTop="0dp"
             android:insetRight="0dp"
             android:insetBottom="0dp"
+            android:paddingTop="2dp"
+            android:paddingBottom="2dp"
             app:backgroundTint="@color/secondary_background"
-            app:icon="@android:drawable/ic_menu_mylocation"
+            app:icon="@mipmap/icon_refresh_foreground"
             app:iconGravity="textStart"
             app:iconPadding="0dp"
+            app:iconSize="20dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
@@ -121,7 +124,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnBackNearbyToilets"
+            android:id="@+id/btnBackToiletDetail"
             android:layout_width="52dp"
             android:layout_height="52dp"
             android:layout_marginEnd="20dp"

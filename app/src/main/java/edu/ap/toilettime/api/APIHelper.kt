@@ -1,14 +1,18 @@
 package edu.ap.toilettime.api
 
+import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.widget.Toast
+import edu.ap.toilettime.maps.MapHelper
 import edu.ap.toilettime.model.Toilet
-import edu.ap.toilettime.model.User
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import okhttp3.*
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import org.osmdroid.util.GeoPoint
+import java.io.IOException
 import java.net.URL
 
 class APIHelper {
@@ -27,7 +31,7 @@ class APIHelper {
     fun getToilets() : List<Toilet>{
 
         val url = URL("https://geodata.antwerpen.be/arcgissql/rest/services/P_Portal/portal_publiek1/MapServer/8/query?where=1%3D1&outFields=*&outSR=4326&f=json")
-        var result : String? = null
+        val result : String?
         val myHandler = Handler(Looper.getMainLooper())
 
         myHandler.post{
@@ -59,7 +63,7 @@ class APIHelper {
                 reporterEmails = ArrayList()
             )
 
-            toilets.add(toilet)
+            if (toilet.street != "null" && toilet.houseNr != "null" && toilet.district != "null") toilets.add(toilet)
         }
 
         return toilets
@@ -77,7 +81,7 @@ class APIHelper {
         }
     }
 
-    fun getLong(obj: JSONObject) : Double{
+    private fun getLong(obj: JSONObject) : Double{
 
         return try {
             val latString = obj.getJSONObject("x").getString("value")
@@ -88,4 +92,44 @@ class APIHelper {
         }
     }
 
+    fun searchLocation(address: String, ctx: Context, mapHelper: MapHelper){
+
+        //Get address location async from API
+        Thread{
+            val client = OkHttpClient()
+            val request = Request.Builder().url(URL("https://nominatim.openstreetmap.org/search.php?q=$address&format=jsonv2")).build()
+            val myHandler = Handler(Looper.getMainLooper())
+
+            client.newCall(request).enqueue(object : Callback {
+
+                override fun onFailure(call: Call, e: IOException) {
+                    myHandler.post {
+                        Toast.makeText(ctx,"There was a problem trying to get address data, please try again.", Toast.LENGTH_LONG).show()
+                    }
+                }
+
+                override fun onResponse(call: Call, response: Response) {
+                    response.use {
+
+                        try{
+                            val jObject : JSONObject = JSONArray(response.body!!.string()).getJSONObject(0)
+                            val lat : Double = jObject.getString("lat").toDouble()
+                            val lon : Double = jObject.getString("lon").toDouble()
+                            val name : String = jObject.getString("display_name")
+
+                            val geoPoint = GeoPoint(lat, lon)
+                            myHandler.post {
+                                //mapHelper.addMarker(null, geoPoint, name, android.R.drawable.btn_plus) //TODO add icon here
+                                mapHelper.setCenter(geoPoint, name)
+                            }
+                        }catch (_: Exception){
+                            myHandler.post {
+                                Toast.makeText(ctx, "Address does not exist", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    }
+                }
+            })
+        }.start()
+    }
 }
