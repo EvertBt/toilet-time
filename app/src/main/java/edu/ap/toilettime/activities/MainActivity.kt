@@ -82,7 +82,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (hasPermissions()) {
-            mapHelper.initMap(true, lastLocation, toiletList, 19.0)
+            //Log.d("MAP", "Initializing map from onCreate, has permissions")
+            //mapHelper.initMap(true, lastLocation, toiletList, 19.0)
         }else{
             ActivityCompat.requestPermissions(this, arrayOf(
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -102,8 +103,10 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 100) {
             if (hasPermissions()) {
+                Log.d("MAP", "Initializing map from onRequestPermissionsResult, has permissions")
                 mapHelper.initMap(true, lastLocation, toiletList, 19.0)
             } else {
+                Log.d("MAP", "Initializing map from onRequestPermissionsResult, no permissions")
                 mapHelper.initMap(false, lastLocation, toiletList, 19.0)
             }
         }
@@ -116,6 +119,7 @@ class MainActivity : AppCompatActivity() {
             Log.d("MAIN", "returning ${toiletList.size} toilets from local database")
 
             if (toiletList.isNotEmpty()) {
+                Log.d("MAP", "Initializing map from loadToiletData")
                 mapHelper.initMap(hasPermissions(), lastLocation, toiletList, 19.0)
             }
         }.start()
@@ -172,7 +176,7 @@ class MainActivity : AppCompatActivity() {
                         Log.d("long", long.toString())
 
                         val location = GeoPoint(lat, long)
-                        mapHelper.initMap(hasPermissions(), location, toiletList)
+                        mapHelper.initMap(hasPermissions(), location, toiletList, 19.0)
                     }
                 }
             }

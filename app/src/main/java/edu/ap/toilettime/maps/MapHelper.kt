@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.drawable.DrawableContainer
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -24,7 +25,7 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.io.File
 
-class MapHelper(packageName: String, cachePath: String, mapView: MapView, private val mainActivity : MainActivity?, private val detailActivity: ToiletDetailActivity?) {
+class MapHelper(packageName: String, cachePath: String, mapView: MapView, mainActivity : MainActivity?, detailActivity: ToiletDetailActivity?) {
 
     var activity: AppCompatActivity = mainActivity ?: detailActivity!!
 
@@ -53,7 +54,7 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
                 addMarker(
                     toilet,
                     GeoPoint(toilet.latitude, toilet.longitude), "${toilet.street} ${toilet.houseNr}, ${toilet.districtCode} ${toilet.district}",
-                    R.mipmap.icon_toilet_map_foreground
+                    R.mipmap.icon_toilet_map_larger
                 )
             }
 
@@ -75,6 +76,7 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
                 mMyLocationOverlay!!.enableMyLocation()
                 mMyLocationOverlay!!.runOnFirstFix{
                     Handler(Looper.getMainLooper()).post {
+                        Log.d("MAP", "Animating to own location: ${mMyLocationOverlay!!.myLocation}")
                         mapController!!.animateTo(mMyLocationOverlay!!.myLocation)
                     }
                 }
