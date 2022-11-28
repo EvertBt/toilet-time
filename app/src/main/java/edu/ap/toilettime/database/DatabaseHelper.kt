@@ -31,7 +31,7 @@ class DatabaseHelper(private val activity: AppCompatActivity) {
         val toiletDao = localDb.toiletDao()
         toiletDao.insertOne(toilet)
         localDb.close()
-        
+
         //Firebase
         val db = ToiletFirebaseRepository()
         db.addToilet(toilet)

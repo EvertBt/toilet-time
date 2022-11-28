@@ -1,8 +1,6 @@
 package edu.ap.toilettime.maps
 
-import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.DrawableContainer
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -13,7 +11,6 @@ import com.google.gson.Gson
 import edu.ap.toilettime.R
 import edu.ap.toilettime.activities.MainActivity
 import edu.ap.toilettime.activities.ToiletDetailActivity
-import edu.ap.toilettime.database.ToiletFirebaseRepository
 import edu.ap.toilettime.model.Toilet
 import org.osmdroid.api.IMapController
 import org.osmdroid.config.Configuration
