@@ -8,9 +8,7 @@ import edu.ap.toilettime.activities.NearbyToiletsActivity
 import edu.ap.toilettime.database.room.ToiletDatabase
 import edu.ap.toilettime.model.Toilet
 
-class DatabaseHelper(private val mainActivity: MainActivity?, private val nearbyToiletsActivity: NearbyToiletsActivity?) {
-
-    var activity: AppCompatActivity? = mainActivity ?: nearbyToiletsActivity
+class DatabaseHelper(private val activity: AppCompatActivity) {
 
     fun getAllToilets(): ArrayList<Toilet>{
 
@@ -22,7 +20,32 @@ class DatabaseHelper(private val mainActivity: MainActivity?, private val nearby
     }
 
     fun updateToilet(toilet: Toilet){
-        //TODO
+
+        //Update local database
+        val localDb = Room.databaseBuilder(
+            activity.applicationContext,
+            ToiletDatabase::class.java, "toilet-database"
+        ).build()
+
+        val toiletDao = localDb.toiletDao()
+        toiletDao.update(toilet)
+        localDb.close()
+
+        //Update all values
+        when (activity) {
+            is MainActivity -> {
+                MainActivity.onDatabaseUpdate(activity)
+            }
+            is NearbyToiletsActivity -> {
+                NearbyToiletsActivity.onDatabaseUpdate(activity)
+            }
+        }
+
+        //Update firebase
+        val db = ToiletFirebaseRepository()
+        db.updateToilet(toilet)
+
+        Log.d("DATABASE", "Updated toilet with id: ${toilet.id}")
     }
 
     private fun getLocalToilets(): ArrayList<Toilet>{
@@ -72,10 +95,10 @@ class DatabaseHelper(private val mainActivity: MainActivity?, private val nearby
             //Update all values
             when (activity) {
                 is MainActivity -> {
-                    MainActivity.onDatabaseUpdate(mainActivity!!)
+                    MainActivity.onDatabaseUpdate(activity)
                 }
                 is NearbyToiletsActivity -> {
-                    NearbyToiletsActivity.onDatabaseUpdate(nearbyToiletsActivity!!)
+                    NearbyToiletsActivity.onDatabaseUpdate(activity)
                 }
             }
         }

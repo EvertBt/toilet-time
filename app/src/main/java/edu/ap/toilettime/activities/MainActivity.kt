@@ -46,7 +46,7 @@ class MainActivity : AppCompatActivity() {
         txtAddress = findViewById(R.id.txtAdress)
 
         //Setup OSM
-        mapHelper = MapHelper(packageName, cacheDir.absolutePath, findViewById(R.id.mapview), this@MainActivity, null)
+        mapHelper = MapHelper(packageName, cacheDir.absolutePath, findViewById(R.id.mapview), this@MainActivity)
 
         //Setup result launchers
         val addToiletResultLauncher = createAddToiletResultLauncher()
@@ -114,7 +114,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun loadToiletData(){
         Thread{
-            toiletList = DatabaseHelper(this@MainActivity, null).getAllToilets()
+            toiletList = DatabaseHelper(this@MainActivity).getAllToilets()
 
             Log.d("MAIN", "returning ${toiletList.size} toilets from local database")
 
@@ -192,12 +192,8 @@ class MainActivity : AppCompatActivity() {
     private fun createToiletDetailResultLauncher(): ActivityResultLauncher<Intent> {
         val resultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == Activity.RESULT_OK) {
-                    val data: Intent? = result.data
-                    val extras = data?.extras
-                    if (extras != null) {
-                        // code to do when coming back from intent (here you add the new toilet)
-                    }
+                if (result.resultCode == 204) {
+                    loadToiletData() //Reload toilet data after user reported a toilet
                 }
             }
         return resultLauncher
