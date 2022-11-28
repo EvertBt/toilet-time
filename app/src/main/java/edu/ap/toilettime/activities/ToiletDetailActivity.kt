@@ -1,7 +1,10 @@
 package edu.ap.toilettime.activities
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
+import android.provider.ContactsContract.CommonDataKinds.Email
+import android.provider.ContactsContract.CommonDataKinds.Phone
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
@@ -17,6 +20,7 @@ import edu.ap.toilettime.model.Toilet
 import edu.ap.toilettime.model.User
 import org.osmdroid.util.GeoPoint
 
+
 class ToiletDetailActivity : AppCompatActivity() {
     lateinit var toilet: Toilet
     lateinit var cbMenAccessible: CheckBox
@@ -30,6 +34,9 @@ class ToiletDetailActivity : AppCompatActivity() {
     lateinit var btnBack: Button
     lateinit var btnReport: Button
     lateinit var mapHelper: MapHelper
+    lateinit var sharedPreferences: SharedPreferences
+
+    private var updated: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -47,14 +54,18 @@ class ToiletDetailActivity : AppCompatActivity() {
         btnBack = findViewById(R.id.btnBackToiletDetail)
         btnReport = findViewById(R.id.btnDetailReport)
 
+        //Load shared preferences
+        sharedPreferences = getSharedPreferences(User.USER, Context.MODE_PRIVATE)
+        txtEmail.setText(sharedPreferences.getString(User.EMAIL, ""))
+
         //Setup OSM
-        mapHelper = MapHelper(packageName, cacheDir.absolutePath, findViewById(R.id.minimapview), null, this@ToiletDetailActivity)
+        mapHelper = MapHelper(packageName, cacheDir.absolutePath, findViewById(R.id.minimapview), this@ToiletDetailActivity)
 
         //Retrieve clicked toilet from intent
         toilet = Gson().fromJson(intent.extras?.get(Toilet.TOILET).toString(), Toilet::class.java)
 
         //Register button clicks
-        btnBack.setOnClickListener { super.finish() }
+        btnBack.setOnClickListener { onBackClick() }
         btnReport.setOnClickListener { onReportClick() }
 
         //Init detail view
@@ -85,15 +96,49 @@ class ToiletDetailActivity : AppCompatActivity() {
 
         if (Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+\$").matches(txtEmail.text.toString())){
 
+            var alreadyUsed = false
+            for (user in toilet.reporterEmails){
+                if (user.email.lowercase().equals(txtEmail.text.toString().lowercase())){
+                    alreadyUsed = true
+                    break
+                }
+            }
+
+            if (alreadyUsed){
+                tvReportError.visibility = View.VISIBLE
+                tvReportError.text = "Je hebt dit toilet al gerapporteerd"
+                return
+            }
+
             tvReportError.visibility = View.VISIBLE
             tvReportError.text = "Toilet is succesvol gerapporteerd"
             tvReportError.setTextColor(getColor(R.color.success))
             tvReportCount.text = "Aantal rapporteringen: ${toilet.reporterEmails.size + 1}"
 
             toilet.reporterEmails.add(User(txtEmail.text.toString()))
-            DatabaseHelper(null, null).updateToilet(toilet)
+            updated = true
+
+            //Update shared preferences
+            val editor: SharedPreferences.Editor = sharedPreferences.edit()
+            editor.putString(User.EMAIL, txtEmail.text.toString())
+            editor.apply()
+
+            //Update database
+            Thread{
+                DatabaseHelper(this@ToiletDetailActivity).updateToilet(toilet)
+            }.start()
         }else{
             tvReportError.visibility = View.VISIBLE
         }
+    }
+
+    private fun onBackClick(){
+
+        if (updated){
+            setResult(204)
+            updated = false
+        }
+
+        super.finish()
     }
 }

@@ -25,9 +25,7 @@ import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.io.File
 
-class MapHelper(packageName: String, cachePath: String, mapView: MapView, mainActivity : MainActivity?, detailActivity: ToiletDetailActivity?) {
-
-    var activity: AppCompatActivity = mainActivity ?: detailActivity!!
+class MapHelper(packageName: String, cachePath: String, mapView: MapView, private val activity: AppCompatActivity) {
 
     private var mMapView: MapView? = null
     private var mapController: IMapController? = null
@@ -53,7 +51,8 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, mainAc
             for(toilet: Toilet in toilets){
                 addMarker(
                     toilet,
-                    GeoPoint(toilet.latitude, toilet.longitude), "${toilet.street} ${toilet.houseNr}, ${toilet.districtCode} ${toilet.district}",
+                    GeoPoint(toilet.latitude, toilet.longitude),
+                    "${toilet.street} ${toilet.houseNr}, ${toilet.districtCode} ${toilet.district}",
                     R.mipmap.icon_toilet_map_larger
                 )
             }
@@ -102,7 +101,7 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, mainAc
                     if (toilet != null){
                         val toiletDetailIntent = Intent(activity.applicationContext, ToiletDetailActivity::class.java)
                         toiletDetailIntent.putExtra(Toilet.TOILET, Gson().toJson(toilet))
-                        (activity as MainActivity).toiletDetailResultLauncher.launch(toiletDetailIntent)
+                        activity.toiletDetailResultLauncher.launch(toiletDetailIntent)
                     }
 
                     return@setOnMarkerClickListener true

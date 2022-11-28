@@ -103,7 +103,7 @@ class NearbyToiletsActivity : AppCompatActivity() {
 
     fun loadToiletData(){
         Thread{
-            toiletList = DatabaseHelper(null, this@NearbyToiletsActivity).getAllToilets()
+            toiletList = DatabaseHelper(this@NearbyToiletsActivity).getAllToilets()
 
             runOnUiThread{
                 updateFilterList()
@@ -113,7 +113,7 @@ class NearbyToiletsActivity : AppCompatActivity() {
         }.start()
     }
 
-    //TODO on list item click ->
+    //TODO on list item click -
     /*val toiletDetailIntent = Intent(this, MainActivity::class.java)
     toiletDetailIntent.putExtra("lat", toilet.latitude)
     toiletDetailIntent.putExtra("long", toilet.longitude)
