@@ -115,6 +115,10 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, mainAc
         }
     }
 
+    fun clearMarkers(){
+        mMapView?.overlays?.forEach { (it as? Marker)?.remove(mMapView) }
+    }
+
     fun setCenter(geoPoint: GeoPoint, name: String) {
         mapController?.setCenter(geoPoint)
     }
