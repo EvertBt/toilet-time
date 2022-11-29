@@ -1,6 +1,7 @@
 package edu.ap.toilettime.activities
 
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
@@ -142,9 +143,10 @@ class AddToiletActivity : AppCompatActivity(){
     }
 
     override fun finish() {
+        intent = Intent()
         intent.putExtra(Toilet.TOILET, Gson().toJson(toilet))
         intent.putExtra(Toilet.LOCATION, Gson().toJson(location))
-        setResult(201)
+        setResult(201, intent)
         super.finish()
     }
 
