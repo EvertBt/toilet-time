@@ -81,6 +81,8 @@ class AddToiletActivity : AppCompatActivity(){
 
         mapHelper.getMapView()!!.overlays.add(MapEventsOverlay(object : MapEventsReceiver {
             override fun singleTapConfirmedHelper(p: GeoPoint): Boolean {
+
+                //Move marker + location
                 location = p
                 mapHelper.clearMarkers()
                 mapHelper.addMarker(
@@ -89,6 +91,9 @@ class AddToiletActivity : AppCompatActivity(){
                     "",
                     R.mipmap.icon_toilet_map_larger
                 )
+
+                //Get new address
+                APIHelper().searchAddress(location, this@AddToiletActivity)
                 return true
             }
 
