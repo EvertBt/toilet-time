@@ -225,7 +225,7 @@ class NearbyToiletsActivity : AppCompatActivity() {
         lvToilets.adapter = toiletAdapter as ToiletAdapter
     }
 
-    override fun finish() : Unit {
+    override fun finish() {
         //intent = Intent()
         // intent.putExtra() return needed data to add new toilet
         intent.putExtra("MALE-FILTER", btnMaleFilterActive)
@@ -246,10 +246,6 @@ class NearbyToiletsActivity : AppCompatActivity() {
         fun nearbyToiletIntent(context: Context): Intent{
             val toiletsIntent = Intent(context, NearbyToiletsActivity::class.java)
             return toiletsIntent
-        }
-
-        fun onDatabaseUpdate(activity: NearbyToiletsActivity){
-            activity.loadToiletData()
         }
     }
 }

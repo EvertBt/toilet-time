@@ -26,7 +26,8 @@ class ToiletFirebaseRepository {
             for (doc in document.documents) {
                 val data = doc.data
 
-                val lat = data?.get(Toilet.LAT) as Double
+                val addedBy = data?.get(Toilet.ADDED_BY) as String
+                val lat = data[Toilet.LAT] as Double
                 val long = data[Toilet.LONG] as Double
                 val street = data[Toilet.STREET] as String
                 val houseNr = data[Toilet.HOUSE_NR] as String
@@ -43,7 +44,7 @@ class ToiletFirebaseRepository {
                     reporterEmails.add(User(email as String))
                 }
 
-                toiletsArrayList.add(Toilet(doc.id, lat, long, street, houseNr, district, districtCode, menAccessible, womenAccessible, wheelchairAccessible, changingTable, reporterEmails))
+                toiletsArrayList.add(Toilet(doc.id, addedBy, lat, long, street, houseNr, district, districtCode, menAccessible, womenAccessible, wheelchairAccessible, changingTable, reporterEmails))
             }
 
             if (document.documents.isEmpty()){
@@ -81,6 +82,8 @@ class ToiletFirebaseRepository {
 
             if (data != null){
 
+
+                val addedBy = data[Toilet.ADDED_BY] as String
                 val lat = data[Toilet.LAT] as Double
                 val long = data[Toilet.LONG] as Double
                 val street = data[Toilet.STREET] as String
@@ -98,7 +101,7 @@ class ToiletFirebaseRepository {
                     reporterEmails.add(User(email as String))
                 }
 
-                toilet = Toilet(document.id, lat, long, street, houseNr, district, districtCode, menAccessible, womenAccessible, wheelchairAccessible, changingTable, reporterEmails)
+                toilet = Toilet(document.id, addedBy, lat, long, street, houseNr, district, districtCode, menAccessible, womenAccessible, wheelchairAccessible, changingTable, reporterEmails)
 
             }else{
                 Log.e(firebaseTag, "No toilet with this id was found")
@@ -110,7 +113,7 @@ class ToiletFirebaseRepository {
         return@runBlocking toilet
     }
 
-    fun addToilet(toilet : Toilet) : Boolean = runBlocking{
+    fun addToilet(toilet : Toilet) : String? = runBlocking{
 
         // Create a new toilet hashmap
         val emailsAsString = ArrayList<String>()
@@ -119,6 +122,7 @@ class ToiletFirebaseRepository {
         }
 
         val toiletMap = hashMapOf(
+            Toilet.ADDED_BY to toilet.addedBy,
             Toilet.LAT to toilet.latitude,
             Toilet.LONG to toilet.longitude,
             Toilet.STREET to toilet.street,
@@ -139,10 +143,10 @@ class ToiletFirebaseRepository {
             Log.d(firebaseTag, "Toilet added with ID: ${docRef.id}")
         } else {
             Log.w(firebaseTag, "Error adding toilet")
-            return@runBlocking false
+            return@runBlocking null
         }
 
-        return@runBlocking true
+        return@runBlocking docRef.id
     }
 
     fun addAllToilets(toilets : List<Toilet>) : Boolean = runBlocking{
@@ -160,6 +164,7 @@ class ToiletFirebaseRepository {
             }
 
             val toiletMap = hashMapOf(
+                Toilet.ADDED_BY to toilet.addedBy,
                 Toilet.LAT to toilet.latitude,
                 Toilet.LONG to toilet.longitude,
                 Toilet.STREET to toilet.street,
@@ -199,6 +204,7 @@ class ToiletFirebaseRepository {
 
         val toiletMap : Map<String, Any> = hashMapOf(
 
+            Toilet.ADDED_BY to toilet.addedBy,
             Toilet.LAT to toilet.latitude,
             Toilet.LONG to toilet.longitude,
             Toilet.STREET to toilet.street!!,

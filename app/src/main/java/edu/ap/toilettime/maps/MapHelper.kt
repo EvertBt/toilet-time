@@ -1,8 +1,6 @@
 package edu.ap.toilettime.maps
 
-import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.DrawableContainer
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -13,7 +11,6 @@ import com.google.gson.Gson
 import edu.ap.toilettime.R
 import edu.ap.toilettime.activities.MainActivity
 import edu.ap.toilettime.activities.ToiletDetailActivity
-import edu.ap.toilettime.database.ToiletFirebaseRepository
 import edu.ap.toilettime.model.Toilet
 import org.osmdroid.api.IMapController
 import org.osmdroid.config.Configuration
@@ -29,7 +26,7 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
 
     private var mMapView: MapView? = null
     private var mapController: IMapController? = null
-    private var mMyLocationOverlay: MyLocationNewOverlay? = null
+    var mMyLocationOverlay: MyLocationNewOverlay? = null
 
     init {
         //Setup OSM
@@ -43,16 +40,25 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
         mapController = mMapView?.controller
     }
 
-    fun initMap(hasLocationPermission: Boolean, location: GeoPoint?, toilets: ArrayList<Toilet>, zoom: Double = 19.0) {
+    fun initMap(hasLocationPermission: Boolean, location: GeoPoint?, toilets: ArrayList<Toilet>, zoom: Double, addingToilet: Boolean) {
         Handler(Looper.getMainLooper()).post {
 
             mMapView?.setTileSource(TileSourceFactory.MAPNIK)
 
-            for(toilet: Toilet in toilets){
+            if (!addingToilet){
+                for(toilet: Toilet in toilets){
+                    addMarker(
+                        toilet,
+                        GeoPoint(toilet.latitude, toilet.longitude),
+                        "${toilet.street} ${toilet.houseNr}, ${toilet.districtCode} ${toilet.district}",
+                        R.mipmap.icon_toilet_map_larger
+                    )
+                }
+            }else{
                 addMarker(
-                    toilet,
-                    GeoPoint(toilet.latitude, toilet.longitude),
-                    "${toilet.street} ${toilet.houseNr}, ${toilet.districtCode} ${toilet.district}",
+                    null,
+                    location!!,
+                    "",
                     R.mipmap.icon_toilet_map_larger
                 )
             }
@@ -61,6 +67,8 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
 
             if (location != null){
                 setCenter(location, "")
+
+                Log.d("MAP", "Setting center on ${location.latitude}, ${location.longitude}")
 
                 if (hasLocationPermission){
                     mMyLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(activity.applicationContext), mMapView)
@@ -108,7 +116,7 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
                 }
             }
 
-            marker.setAnchor(Marker.ANCHOR_BOTTOM, Marker.ANCHOR_CENTER)
+            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
             mMapView?.overlays?.add(marker)
             mMapView?.invalidate()
         }

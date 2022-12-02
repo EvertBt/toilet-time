@@ -17,7 +17,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.android.material.button.MaterialButton
-import edu.ap.toilettime.Adapters.ToiletAdapter
+import com.google.gson.Gson
 import edu.ap.toilettime.R
 import edu.ap.toilettime.api.APIHelper
 import edu.ap.toilettime.database.DatabaseHelper
@@ -83,6 +83,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnRefresh.setOnClickListener {
+            lastLocation = null
             loadToiletData()
             clearFilters()
         }
@@ -120,8 +121,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (hasPermissions()) {
-            //Log.d("MAP", "Initializing map from onCreate, has permissions")
-            //mapHelper.initMap(true, lastLocation, toiletList, 19.0)
+            mapHelper.initMap(true, lastLocation, toiletList, 19.0, false)
         }else{
             ActivityCompat.requestPermissions(this, arrayOf(
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -142,15 +142,15 @@ class MainActivity : AppCompatActivity() {
         if (requestCode == 100) {
             if (hasPermissions()) {
                 Log.d("MAP", "Initializing map from onRequestPermissionsResult, has permissions")
-                mapHelper.initMap(true, lastLocation, toiletList, 19.0)
+                mapHelper.initMap(true, lastLocation, toiletList, 19.0, false)
             } else {
                 Log.d("MAP", "Initializing map from onRequestPermissionsResult, no permissions")
-                mapHelper.initMap(false, lastLocation, toiletList, 19.0)
+                mapHelper.initMap(false, lastLocation, toiletList, 19.0, false)
             }
         }
     }
 
-    private fun loadToiletData(){
+    fun loadToiletData(){
         Thread{
             toiletList = DatabaseHelper(this@MainActivity).getAllToilets()
 
@@ -158,7 +158,7 @@ class MainActivity : AppCompatActivity() {
 
             if (toiletList.isNotEmpty()) {
                 Log.d("MAP", "Initializing map from loadToiletData")
-                mapHelper.initMap(hasPermissions(), lastLocation, toiletList, 19.0)
+                mapHelper.initMap(hasPermissions(), lastLocation, toiletList, 19.0, false)
             }
         }.start()
     }
@@ -280,11 +280,21 @@ class MainActivity : AppCompatActivity() {
     private fun createAddToiletResultLauncher(): ActivityResultLauncher<Intent> {
         val resultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == Activity.RESULT_OK) {
-                    val data: Intent? = result.data
-                    val extras = data?.extras
-                    if (extras != null) {
-                        // code to do when coming back from intent (here you add the new toilet)
+                if (result.resultCode == 201) {
+                    val data = result.data
+
+                    if (data != null && data.extras != null){
+
+                        lastLocation = Gson().fromJson(data.extras?.getString(Toilet.LOCATION), GeoPoint::class.java)
+                        Log.d("APP", "Last loc: ${lastLocation}")
+                        val toilet: Toilet = Gson().fromJson(data.extras?.getString(Toilet.TOILET), Toilet::class.java)
+
+                        //Update database
+                        Thread{
+                            DatabaseHelper(this@MainActivity).addToilet(toilet)
+                        }.start()
+                    }else{
+                        Log.e("ADD", "Data extras was null")
                     }
                 }
             }
@@ -292,7 +302,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun clickBTNAddToilet(resultLauncher : ActivityResultLauncher<Intent>){
+
         val addToiletActivityIntent = Intent(this, AddToiletActivity::class.java)
+        addToiletActivityIntent.putExtra(Toilet.LOCATION, Gson().toJson(GeoPoint(mapHelper.getMapView()!!.mapCenter.latitude, mapHelper.getMapView()!!.mapCenter.longitude)))
+
         resultLauncher.launch(addToiletActivityIntent)
     }
 
@@ -309,7 +322,7 @@ class MainActivity : AppCompatActivity() {
 
                         val location = GeoPoint(lat, long)
 
-                        mapHelper.initMap(hasPermissions(), location, toiletList, 19.0)
+                        mapHelper.initMap(hasPermissions(), location, toiletList, 19.0, false)
 
                         btnMaleFilterActive = extras.getBoolean("MALE-FILTER", false)
                         btnFemaleFilterActive = extras.getBoolean("FEMALE-FILTER", false)
@@ -365,7 +378,7 @@ class MainActivity : AppCompatActivity() {
     private fun createToiletDetailResultLauncher(): ActivityResultLauncher<Intent> {
         val resultLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-                if (result.resultCode == 204) {
+                if (result.resultCode == 201) {
                     loadToiletData() //Reload toilet data after user reported a toilet
                 }
             }
@@ -380,13 +393,6 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         mapHelper.getMapView()?.onResume()
-    }
-
-    companion object{
-        fun onDatabaseUpdate(mainActivity: MainActivity){
-            Log.d("DATABASEHELPER", "updating database with new data")
-            mainActivity.loadToiletData()
-        }
     }
 }
 

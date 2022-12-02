@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey
 @Entity
 data class Toilet (
     @PrimaryKey var id: String,
+    @ColumnInfo(name = "added_by") var addedBy: String,
     @ColumnInfo(name = "latitude") var latitude: Double,
     @ColumnInfo(name = "longitude") var longitude: Double,
     @ColumnInfo(name = "street") var street: String?,
@@ -22,7 +23,9 @@ data class Toilet (
 ){
     companion object {
         var TOILET = "toilet"
+        var LOCATION = "location"
         var ID = "id"
+        var ADDED_BY = "added_by"
         var STREET = "street"
         var HOUSE_NR = "house_nr"
         var DISTRICT_CODE = "district_code"

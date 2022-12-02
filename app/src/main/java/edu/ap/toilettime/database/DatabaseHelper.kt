@@ -2,7 +2,6 @@ package edu.ap.toilettime.database
 
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
-import androidx.room.Dao
 import androidx.room.Room
 import edu.ap.toilettime.activities.MainActivity
 import edu.ap.toilettime.activities.NearbyToiletsActivity
@@ -22,19 +21,15 @@ class DatabaseHelper(private val activity: AppCompatActivity) {
 
     fun addToilet(toilet: Toilet){
 
-        //Local database
-        val localDb = Room.databaseBuilder(
-            activity.applicationContext,
-            ToiletDatabase::class.java, "toilet-database"
-        ).build()
-
-        val toiletDao = localDb.toiletDao()
-        toiletDao.insertOne(toilet)
-        localDb.close()
-        
         //Firebase
         val db = ToiletFirebaseRepository()
-        db.addToilet(toilet)
+        val id = db.addToilet(toilet)
+
+        //Toilet will be added to local db on update
+        if (id != null){
+            toilet.id = id
+            updateLocalDatabase(ArrayList(listOf(toilet)))
+        }
     }
 
     fun updateToilet(toilet: Toilet){
@@ -51,12 +46,8 @@ class DatabaseHelper(private val activity: AppCompatActivity) {
 
         //Update all values
         when (activity) {
-            is MainActivity -> {
-                MainActivity.onDatabaseUpdate(activity)
-            }
-            is NearbyToiletsActivity -> {
-                NearbyToiletsActivity.onDatabaseUpdate(activity)
-            }
+            is MainActivity -> activity.loadToiletData()
+            is NearbyToiletsActivity -> activity.loadToiletData()
         }
 
         //Update firebase
@@ -102,7 +93,7 @@ class DatabaseHelper(private val activity: AppCompatActivity) {
             Log.d("DATABASEHELPER", "${updatedToilets.size} toilets need to be updated!")
 
             val localDb = Room.databaseBuilder(
-                activity!!.applicationContext,
+                activity.applicationContext,
                 ToiletDatabase::class.java, "toilet-database"
             ).build()
 
@@ -112,12 +103,8 @@ class DatabaseHelper(private val activity: AppCompatActivity) {
 
             //Update all values
             when (activity) {
-                is MainActivity -> {
-                    MainActivity.onDatabaseUpdate(activity)
-                }
-                is NearbyToiletsActivity -> {
-                    NearbyToiletsActivity.onDatabaseUpdate(activity)
-                }
+                is MainActivity -> activity.loadToiletData()
+                is NearbyToiletsActivity -> activity.loadToiletData()
             }
         }
     }

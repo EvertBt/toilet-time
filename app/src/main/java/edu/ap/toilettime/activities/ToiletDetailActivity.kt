@@ -81,7 +81,7 @@ class ToiletDetailActivity : AppCompatActivity() {
         tvAddress.text = "${toilet.street} ${toilet.houseNr}, ${toilet.districtCode} ${toilet.district}"
         tvReportCount.text = "Aantal rapporteringen: ${toilet.reporterEmails.size}"
 
-        mapHelper.initMap(false, GeoPoint(toilet.latitude, toilet.longitude), ArrayList(listOf(toilet)), 20.0)
+        mapHelper.initMap(false, GeoPoint(toilet.latitude, toilet.longitude), ArrayList(listOf(toilet)), 20.0, false)
     }
 
     private fun onReportClick(){
@@ -135,7 +135,7 @@ class ToiletDetailActivity : AppCompatActivity() {
     private fun onBackClick(){
 
         if (updated){
-            setResult(204)
+            setResult(201)
             updated = false
         }
 
