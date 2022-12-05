@@ -3,7 +3,7 @@ package edu.ap.toilettime.activities
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.webkit.WebView
 import android.widget.Adapter
 import android.widget.AdapterView
 import android.widget.Button
@@ -14,9 +14,14 @@ import edu.ap.toilettime.Adapters.ToiletAdapter
 import edu.ap.toilettime.R
 import edu.ap.toilettime.database.DatabaseHelper
 import edu.ap.toilettime.model.Toilet
+import org.osmdroid.bonuspack.routing.OSRMRoadManager
+import org.osmdroid.bonuspack.routing.RoadManager
+import org.osmdroid.util.GeoPoint
 
 
 class NearbyToiletsActivity : AppCompatActivity() {
+
+    lateinit var roadManager: RoadManager
     lateinit var btnBack : Button
 
     lateinit var btnClearFilter : Button
@@ -41,6 +46,10 @@ class NearbyToiletsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        //setup road manager
+        roadManager = OSRMRoadManager(this, WebView(this).settings.userAgentString)
+
         setContentView(R.layout.activity_nearby_toilets)
 
         currentLat = intent.getDoubleExtra("lat", 0.0)
@@ -107,8 +116,13 @@ class NearbyToiletsActivity : AppCompatActivity() {
             runOnUiThread{
                 checkFilters()
                 updateFilterList()
+
                 toiletAdapter = ToiletAdapter(this, toiletFilterList)
                 lvToilets.adapter = toiletAdapter as ToiletAdapter
+
+                Thread{
+                    calculateDistances()
+                }.start()
             }
         }.start()
     }
@@ -227,6 +241,24 @@ class NearbyToiletsActivity : AppCompatActivity() {
         // update adapter
         toiletAdapter = ToiletAdapter(this, toiletFilterList)
         lvToilets.adapter = toiletAdapter as ToiletAdapter
+    }
+
+    private fun calculateDistances(){
+
+        for (toilet in toiletFilterList){
+            val waypoints: ArrayList<GeoPoint> = ArrayList()
+            waypoints.add(GeoPoint(currentLat, currentLong))
+            waypoints.add(GeoPoint(toilet.latitude,toilet.longitude))
+
+            val road = roadManager.getRoad(waypoints)
+            toilet.distance = road.mLength
+        }
+
+        toiletList = ArrayList(toiletList.sortedWith(compareBy { it.distance }))
+
+        runOnUiThread{
+            updateFilterList()
+        }
     }
 
     override fun finish() {

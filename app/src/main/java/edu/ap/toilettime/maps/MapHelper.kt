@@ -1,6 +1,7 @@
 package edu.ap.toilettime.maps
 
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -21,6 +22,7 @@ import org.osmdroid.views.overlay.Marker
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.io.File
+
 
 class MapHelper(packageName: String, cachePath: String, mapView: MapView, private val activity: AppCompatActivity) {
 
@@ -70,17 +72,25 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
 
                 Log.d("MAP", "Setting center on ${location.latitude}, ${location.longitude}")
 
-                if (hasLocationPermission){
-                    mMyLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(activity.applicationContext), mMapView)
-                    mMyLocationOverlay!!.enableMyLocation()
-                    mMapView!!.overlays.add(mMyLocationOverlay)
-                }
+                mMyLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(activity.applicationContext), mMapView)
+                if (!mMyLocationOverlay!!.isMyLocationEnabled) mMyLocationOverlay!!.enableMyLocation()
+                mMapView!!.overlays.add(mMyLocationOverlay)
                 return@post
             }
 
             if (hasLocationPermission){
+
                 mMyLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(activity.applicationContext), mMapView)
-                mMyLocationOverlay!!.enableMyLocation()
+                if (!mMyLocationOverlay!!.isMyLocationEnabled) mMyLocationOverlay!!.enableMyLocation()
+
+                //Set custom icon
+                val icon = BitmapFactory.decodeResource(activity.applicationContext.resources, R.mipmap.icon_location_foreground)
+                mMyLocationOverlay!!.setPersonIcon(icon)
+                mMyLocationOverlay!!.setDirectionIcon(icon)
+                mMyLocationOverlay!!.setPersonAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+                mMyLocationOverlay!!.setDirectionAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_CENTER)
+
+                //Animate to own location
                 mMyLocationOverlay!!.runOnFirstFix{
                     Handler(Looper.getMainLooper()).post {
                         Log.d("MAP", "Animating to own location: ${mMyLocationOverlay!!.myLocation}")
@@ -89,9 +99,11 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
                         //set current location
                         MainActivity.currentLat = mMyLocationOverlay!!.myLocation.latitude
                         MainActivity.currentLong = mMyLocationOverlay!!.myLocation.longitude
+
+                        mMapView!!.overlays.add(mMyLocationOverlay)
                     }
                 }
-                mMapView!!.overlays.add(mMyLocationOverlay)
+
             }else{
                 setCenter(GeoPoint(51.23020595, 4.41655480828479), "Campus Ellermanstraat")
                 MainActivity.currentLat = 51.23020595

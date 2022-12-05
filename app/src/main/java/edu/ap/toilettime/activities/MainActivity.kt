@@ -7,6 +7,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.StrictMode
+import android.os.StrictMode.ThreadPolicy
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
@@ -26,6 +28,7 @@ import edu.ap.toilettime.database.DatabaseHelper
 import edu.ap.toilettime.maps.MapHelper
 import edu.ap.toilettime.model.Toilet
 import org.osmdroid.util.GeoPoint
+
 
 class MainActivity : AppCompatActivity() {
     lateinit var btnAddToilet : Button
@@ -50,6 +53,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        //OSM Setup
+        StrictMode.setThreadPolicy(ThreadPolicy.Builder().permitAll().build())
 
         //set locationPermission in companionobject
         locationPermission = hasPermissions()
