@@ -4,14 +4,17 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.webkit.WebView
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import android.widget.TextView
 import edu.ap.toilettime.R
 import edu.ap.toilettime.model.Toilet
+import org.osmdroid.bonuspack.routing.OSRMRoadManager
+import org.osmdroid.bonuspack.routing.RoadManager
+import org.osmdroid.util.GeoPoint
 
-class ToiletAdapter(private val context: Context,
-                    private val dataSource: ArrayList<Toilet>) : BaseAdapter() {
+class ToiletAdapter(private val context: Context, private val dataSource: ArrayList<Toilet>) : BaseAdapter() {
     private  val inflater: LayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
     override fun getCount(): Int {
@@ -41,7 +44,16 @@ class ToiletAdapter(private val context: Context,
         val toilet = getItem(position) as Toilet
 
         tvAdress.text = "${toilet.street} ${toilet.houseNr}, ${toilet.districtCode} ${toilet.district}"
-        tvDistance.text = toilet.id //change to distance later
+
+        if (toilet.distance == null){
+            tvDistance.text = "Afstand aan het laden..."
+        }else{
+            if (toilet.distance!! > 1){
+                tvDistance.text = "${String.format("%.1f", toilet.distance)}km"
+            }else{
+                tvDistance.text = "${String.format("%.f", toilet.distance!! * 1000)}m"
+            }
+        }
 
         if(!toilet.menAccessible){
             icMenAccesible.setColorFilter(context.resources.getColor(com.google.android.material.R.color.material_grey_300))

@@ -3,10 +3,11 @@ package edu.ap.toilettime.model
 import androidx.annotation.NonNull
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Ignore
 import androidx.room.PrimaryKey
 
 @Entity
-data class Toilet (
+data class Toilet  (
     @PrimaryKey var id: String,
     @ColumnInfo(name = "added_by") var addedBy: String,
     @ColumnInfo(name = "latitude") var latitude: Double,
@@ -19,7 +20,8 @@ data class Toilet (
     @ColumnInfo(name = "women_acessible") var womenAccessible: Boolean,
     @ColumnInfo(name = "wheelchair_accessible") var wheelchairAccessible: Boolean,
     @ColumnInfo(name = "changing_accessible") var changingTable: Boolean,
-    @ColumnInfo(name = "reporter_emails") var reporterEmails: ArrayList<User>
+    @ColumnInfo(name = "reporter_emails") var reporterEmails: ArrayList<User>,
+    var distance: Double? = null
 ){
     companion object {
         var TOILET = "toilet"
