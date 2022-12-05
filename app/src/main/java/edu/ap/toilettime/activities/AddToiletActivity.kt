@@ -20,7 +20,6 @@ import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.MapEventsOverlay
 
-
 class AddToiletActivity : AppCompatActivity(){
 
     lateinit var cbMenAccessible: CheckBox
@@ -36,7 +35,7 @@ class AddToiletActivity : AppCompatActivity(){
     lateinit var sharedPreferences: SharedPreferences
     lateinit var location: GeoPoint
 
-    private var address: Address? = null
+    var address: Address? = null
     private var updated: Boolean = false
     private var toilet: Toilet? = null
 
@@ -106,7 +105,13 @@ class AddToiletActivity : AppCompatActivity(){
     private fun onAddClick(){
 
         if (address == null){
-            Toast.makeText(this, "Please wait until the address is loaded", Toast.LENGTH_LONG).show()
+            Toast.makeText(this, "Wacht tot het adres is geladen", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        if (!cbMenAccessible.isChecked && !cbWomenAccessible.isChecked && !cbWheelchairAccessible.isChecked && !cbChangingTable.isChecked){
+            tvAddError.text = "Gelieve ten minste 1 optie aan te vinken"
+            tvAddError.visibility = View.VISIBLE
             return
         }
 

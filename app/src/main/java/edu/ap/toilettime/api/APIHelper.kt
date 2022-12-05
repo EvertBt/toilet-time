@@ -180,6 +180,12 @@ class APIHelper {
                     }catch (e: Exception){
                         myHandler.post {
                             Toast.makeText(activity.applicationContext, "There was a problem getting the address", Toast.LENGTH_LONG).show()
+                            if (activity is AddToiletActivity){
+                                Handler(Looper.getMainLooper()).post{
+                                    activity.tvAddress.text = "Kan adres niet laden"
+                                    activity.address = null
+                                }
+                            }
                         }
                         Log.e("API", e.stackTraceToString())
                     }

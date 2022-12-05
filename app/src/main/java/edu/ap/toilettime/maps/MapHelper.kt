@@ -31,7 +31,7 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
     var mMyLocationOverlay: MyLocationNewOverlay? = null
 
     init {
-        //Setup OSM
+        //Setup OSM basics
         val osmConfig = Configuration.getInstance()
         osmConfig.userAgentValue = packageName
         val basePath = File(cachePath, "osmdroid")
@@ -40,6 +40,13 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
         osmConfig.osmdroidTileCache = tileCache
         mMapView = mapView
         mapController = mMapView?.controller
+
+        //Setup map
+        mMapView!!.setMultiTouchControls(true);
+        mMapView!!.setBuiltInZoomControls(false);
+
+        mMyLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(activity.applicationContext), mMapView)
+        mMyLocationOverlay!!.enableMyLocation()
     }
 
     fun initMap(hasLocationPermission: Boolean, location: GeoPoint?, toilets: ArrayList<Toilet>, zoom: Double, addingToilet: Boolean) {
@@ -71,17 +78,11 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
                 setCenter(location, "")
 
                 Log.d("MAP", "Setting center on ${location.latitude}, ${location.longitude}")
-
-                mMyLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(activity.applicationContext), mMapView)
-                if (!mMyLocationOverlay!!.isMyLocationEnabled) mMyLocationOverlay!!.enableMyLocation()
                 mMapView!!.overlays.add(mMyLocationOverlay)
                 return@post
             }
 
             if (hasLocationPermission){
-
-                mMyLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(activity.applicationContext), mMapView)
-                if (!mMyLocationOverlay!!.isMyLocationEnabled) mMyLocationOverlay!!.enableMyLocation()
 
                 //Set custom icon
                 val icon = BitmapFactory.decodeResource(activity.applicationContext.resources, R.mipmap.icon_location_foreground)
