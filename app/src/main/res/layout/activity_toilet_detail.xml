@@ -12,6 +12,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="@color/primary_background_light"
+        android:elevation="10dp"
         android:padding="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
@@ -26,7 +27,7 @@
             android:insetTop="0dp"
             android:insetRight="0dp"
             android:insetBottom="0dp"
-            app:backgroundTint="@color/secondary_background_dark"
+            app:backgroundTint="@color/primary_background_dark"
             app:cornerRadius="20dp"
             app:icon="?attr/homeAsUpIndicator"
             app:iconGravity="textStart"
@@ -51,11 +52,21 @@
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/clToiletDetailTitleBar"
+        app:layout_constraintHorizontal_bias="0.0"
+        android:background="@drawable/shadow_reversed"
+        />
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/clMenAccessible"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="10dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/clToiletDetailTitleBar">
@@ -220,11 +231,21 @@
             app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/clDetailReport"
+        app:layout_constraintHorizontal_bias="0.0"
+        android:background="@drawable/shadow_reversed"
+        />
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/clDetailReport"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="20dp"
         android:layout_marginBottom="20dp"
         app:layout_constraintBottom_toTopOf="@id/clMinimap"
         app:layout_constraintEnd_toEndOf="parent"
@@ -302,6 +323,16 @@
             app:layout_constraintTop_toBottomOf="@+id/txtDetailReportEmail"
             tools:text="Gelieve een geldig email adres in te vullen" />
     </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/clMinimap"
+        app:layout_constraintHorizontal_bias="0.0"
+        android:background="@drawable/shadow"
+        />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/clMinimap"

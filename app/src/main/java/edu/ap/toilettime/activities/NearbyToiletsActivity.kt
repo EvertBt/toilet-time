@@ -10,6 +10,8 @@ import android.widget.Button
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.button.MaterialButton
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import edu.ap.toilettime.Adapters.ToiletAdapter
 import edu.ap.toilettime.R
 import edu.ap.toilettime.database.DatabaseHelper
@@ -23,9 +25,7 @@ class NearbyToiletsActivity : AppCompatActivity() {
 
     lateinit var roadManager: RoadManager
     lateinit var btnBack : Button
-
     lateinit var btnClearFilter : Button
-
     lateinit var btnMaleFilter : MaterialButton
     var btnMaleFilterActive : Boolean = false
     lateinit var btnFemaleFilter : MaterialButton
@@ -106,7 +106,13 @@ class NearbyToiletsActivity : AppCompatActivity() {
             switchChangingTableFilter()
         }
 
-        loadToiletData()
+        //loadToiletData()
+
+        toiletList = Gson().fromJson(intent.extras?.get(Toilet.TOILET).toString(), object : TypeToken<List<Toilet>>() {}.type)
+        checkFilters()
+        updateFilterList()
+        toiletAdapter = ToiletAdapter(this, toiletFilterList)
+        lvToilets.adapter = toiletAdapter as ToiletAdapter
     }
 
     fun loadToiletData(){
@@ -144,7 +150,6 @@ class NearbyToiletsActivity : AppCompatActivity() {
         if(btnChangingTableFilterActive){
             btnChangingTableFilter.icon.setTint(getColor(R.color.white))
         }
-
     }
 
     private fun clearFilters(){

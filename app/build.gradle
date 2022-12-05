@@ -64,4 +64,5 @@ dependencies {
 
     // Osm bonus
     implementation 'com.github.MKergall:osmbonuspack:6.9.0'
+    implementation 'com.github.yshrsmz:KeyboardVisibilityEvent:v3.0.0-RC3'
 }

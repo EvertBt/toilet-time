@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
 import android.os.Build
 import android.os.Bundle
 import android.os.StrictMode
@@ -13,8 +14,10 @@ import android.util.Log
 import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
+import android.webkit.WebView
 import android.widget.Button
-import android.widget.EditText
+import android.widget.SearchView
+import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -27,15 +30,19 @@ import edu.ap.toilettime.api.APIHelper
 import edu.ap.toilettime.database.DatabaseHelper
 import edu.ap.toilettime.maps.MapHelper
 import edu.ap.toilettime.model.Toilet
+import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent.setEventListener
+import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEventListener
+import org.osmdroid.bonuspack.routing.OSRMRoadManager
+import org.osmdroid.bonuspack.routing.RoadManager
 import org.osmdroid.util.GeoPoint
 
 
 class MainActivity : AppCompatActivity() {
+    lateinit var roadManager: RoadManager
     lateinit var btnAddToilet : Button
     lateinit var btnNearbyToilets : Button
     lateinit var btnRefresh : Button
-    lateinit var btnSearch : Button
-    lateinit var txtAddress : EditText
+    lateinit var svSearchAddress : SearchView
     lateinit var mapHelper: MapHelper
     lateinit var toiletDetailResultLauncher: ActivityResultLauncher<Intent>
     private var toiletList: ArrayList<Toilet> = ArrayList()
@@ -54,10 +61,13 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        //setup road manager
+        roadManager = OSRMRoadManager(this, WebView(this).settings.userAgentString)
+
         //OSM Setup
         StrictMode.setThreadPolicy(ThreadPolicy.Builder().permitAll().build())
 
-        //set locationPermission in companionobject
+        //set locationPermission in companion object
         locationPermission = hasPermissions()
 
         if (Build.VERSION.SDK_INT >= 21) {
@@ -72,8 +82,7 @@ class MainActivity : AppCompatActivity() {
         btnAddToilet = findViewById(R.id.btnBackToiletDetail)
         btnNearbyToilets = findViewById(R.id.btnNearbyToilets)
         btnRefresh = findViewById(R.id.btnRefresh)
-        btnSearch = findViewById(R.id.btnSearch)
-        txtAddress = findViewById(R.id.txtAdress)
+        svSearchAddress = findViewById(R.id.svMainSearch)
 
         btnMaleFilter = findViewById(R.id.btnMaleFilter)
         btnMaleFilterActive = false
@@ -87,44 +96,8 @@ class MainActivity : AppCompatActivity() {
         //Setup OSM
         mapHelper = MapHelper(packageName, cacheDir.absolutePath, findViewById(R.id.mapview), this@MainActivity)
 
-        //Setup result launchers
-        val addToiletResultLauncher = createAddToiletResultLauncher()
-        val nearbyToiletsResultLauncher = createNearbyToiletsResultLauncher()
-        toiletDetailResultLauncher = createToiletDetailResultLauncher()
-
-        btnAddToilet.setOnClickListener {
-            clickBTNAddToilet(addToiletResultLauncher)
-        }
-
-        btnNearbyToilets.setOnClickListener {
-            clickBTNNearbyToilets(nearbyToiletsResultLauncher)
-        }
-
-        btnRefresh.setOnClickListener {
-            lastLocation = null
-            loadToiletData()
-            clearFilters()
-        }
-
-        btnSearch.setOnClickListener {
-            searchLocation(txtAddress.text.toString())
-        }
-
-        btnMaleFilter.setOnClickListener {
-            switchMaleFilter()
-        }
-
-        btnFemaleFilter.setOnClickListener {
-            switchFemaleFilter()
-        }
-
-        btnWheelchairFilter.setOnClickListener {
-            switchWheelchairFilter()
-        }
-
-        btnChangingTableFilter.setOnClickListener {
-            switchChangingTableFilter()
-        }
+        //Setup listeners
+        setupListeners()
 
         //Load toilets from database
         loadToiletData()
@@ -141,37 +114,25 @@ class MainActivity : AppCompatActivity() {
         if (hasPermissions()) {
             mapHelper.initMap(true, lastLocation, toiletList, 19.0, false)
         }else{
-            //request permissions
             requestPermission()
         }
     }
 
     private fun requestPermission(){
         when {
-            (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
-            and (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
-            and (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)-> {
+            hasPermissions()-> {
                 // Permission is granted
             }
             (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE))
             and (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION))
             and (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION))-> {
-                // Aditional rationale should be displayed
-                Log.d("permissionrationale","should be shown")
 
-                ActivityCompat.requestPermissions(this, arrayOf(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ), 100)
+                // Aditional rationale should be displayed
+                requestPermissions()
             }
             else -> {
                 // Permission has not been asked yet
-                ActivityCompat.requestPermissions(this, arrayOf(
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ), 100)
+                requestPermissions()
             }
         }
     }
@@ -180,6 +141,14 @@ class MainActivity : AppCompatActivity() {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestPermissions(){
+        ActivityCompat.requestPermissions(this, arrayOf(
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_FINE_LOCATION
+        ), 100)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
@@ -199,28 +168,90 @@ class MainActivity : AppCompatActivity() {
         Thread{
             toiletList = DatabaseHelper(this@MainActivity).getAllToilets()
 
-            Log.d("MAIN", "returning ${toiletList.size} toilets from local database")
-
             if (toiletList.isNotEmpty()) {
-                Log.d("MAP", "Initializing map from loadToiletData")
                 mapHelper.initMap(hasPermissions(), lastLocation, toiletList, 19.0, false)
             }
+
+            calculateDistances()
         }.start()
+    }
+
+    private fun calculateDistances(){
+
+        for (toilet in toiletList){
+            val waypoints: ArrayList<GeoPoint> = ArrayList()
+            waypoints.add(GeoPoint(currentLat, currentLong))
+            waypoints.add(GeoPoint(toilet.latitude,toilet.longitude))
+
+            val road = roadManager.getRoad(waypoints)
+            toilet.distance = road.mLength
+        }
+
+        toiletList = ArrayList(toiletList.sortedWith(compareBy { it.distance }))
     }
 
     private fun searchLocation(address: String){
 
         //Force close keyboard
-        txtAddress.clearFocus()
+        svSearchAddress.clearFocus()
         val view: View? = findViewById(android.R.id.content)
         if (view != null) {
             val imm: InputMethodManager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(view.windowToken, 0)
         }
 
-        if (txtAddress.text.toString() != ""){
+        if (address != ""){
             //Search for location
             APIHelper().searchLocation(address, this, mapHelper)
+        }
+    }
+
+    private fun setupListeners(){
+
+        val addToiletResultLauncher = createAddToiletResultLauncher()
+        val nearbyToiletsResultLauncher = createNearbyToiletsResultLauncher()
+        toiletDetailResultLauncher = createToiletDetailResultLauncher()
+
+        btnAddToilet.setOnClickListener {
+            clickBTNAddToilet(addToiletResultLauncher)
+        }
+
+        btnNearbyToilets.setOnClickListener {
+            clickBTNNearbyToilets(nearbyToiletsResultLauncher)
+        }
+
+        btnRefresh.setOnClickListener {
+            lastLocation = null
+            loadToiletData()
+            clearFilters()
+        }
+
+        svSearchAddress.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                searchLocation(query)
+                return true
+            }
+            override fun onQueryTextChange(p0: String?): Boolean {return false}
+        })
+
+        setEventListener(this, KeyboardVisibilityEventListener {
+            if (!it) svSearchAddress.clearFocus()
+        })
+
+        btnMaleFilter.setOnClickListener {
+            switchMaleFilter()
+        }
+
+        btnFemaleFilter.setOnClickListener {
+            switchFemaleFilter()
+        }
+
+        btnWheelchairFilter.setOnClickListener {
+            switchWheelchairFilter()
+        }
+
+        btnChangingTableFilter.setOnClickListener {
+            switchChangingTableFilter()
         }
     }
 
@@ -349,6 +380,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun clickBTNAddToilet(resultLauncher : ActivityResultLauncher<Intent>){
 
+        if (!isNetworkAvailable()){
+            Toast.makeText(this, "Deze functie is alleen beschikbaar met een internetverbinding", Toast.LENGTH_LONG).show()
+            return
+        }
+
         val addToiletActivityIntent = Intent(this, AddToiletActivity::class.java)
         addToiletActivityIntent.putExtra(Toilet.LOCATION, Gson().toJson(GeoPoint(mapHelper.getMapView()!!.mapCenter.latitude, mapHelper.getMapView()!!.mapCenter.longitude)))
 
@@ -393,13 +429,13 @@ class MainActivity : AppCompatActivity() {
             nearbyToiletsIntent.putExtra("lat", currentLat)
             nearbyToiletsIntent.putExtra("long", currentLong)
         }
-        Log.d("click lat:", currentLat.toString())
-        Log.d("click long:", currentLong.toString())
 
         nearbyToiletsIntent.putExtra("MALE-FILTER", btnMaleFilterActive)
         nearbyToiletsIntent.putExtra("FEMALE-FILTER", btnFemaleFilterActive)
         nearbyToiletsIntent.putExtra("WHEELCHAIR-FILTER", btnWheelchairFilterActive)
         nearbyToiletsIntent.putExtra("CHANGING-TABLE-FILTER", btnChangingTableFilterActive)
+        nearbyToiletsIntent.putExtra(Toilet.TOILET, Gson().toJson(toiletList))
+
         resultLauncher.launch(nearbyToiletsIntent)
     }
 
@@ -440,6 +476,12 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         return resultLauncher
+    }
+
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetworkInfo = connectivityManager.activeNetworkInfo
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected
     }
 
     override fun onPause() {

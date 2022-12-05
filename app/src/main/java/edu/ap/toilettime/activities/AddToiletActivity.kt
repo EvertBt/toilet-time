@@ -3,15 +3,14 @@ package edu.ap.toilettime.activities
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.ConnectivityManager
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
 import edu.ap.toilettime.R
 import edu.ap.toilettime.api.APIHelper
-import edu.ap.toilettime.database.DatabaseHelper
 import edu.ap.toilettime.maps.MapHelper
 import edu.ap.toilettime.model.Address
 import edu.ap.toilettime.model.Toilet
@@ -19,6 +18,7 @@ import edu.ap.toilettime.model.User
 import org.osmdroid.events.MapEventsReceiver
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.overlay.MapEventsOverlay
+
 
 class AddToiletActivity : AppCompatActivity(){
 
