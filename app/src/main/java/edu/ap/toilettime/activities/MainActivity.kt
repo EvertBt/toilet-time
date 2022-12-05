@@ -135,11 +135,38 @@ class MainActivity : AppCompatActivity() {
         if (hasPermissions()) {
             mapHelper.initMap(true, lastLocation, toiletList, 19.0, false)
         }else{
-            ActivityCompat.requestPermissions(this, arrayOf(
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ), 100)
+            //request permissions
+            requestPermission()
+        }
+    }
+
+    private fun requestPermission(){
+        when {
+            (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+            and (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+            and (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)-> {
+                // Permission is granted
+            }
+            (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE))
+            and (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION))
+            and (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION))-> {
+                // Aditional rationale should be displayed
+                Log.d("permissionrationale","should be shown")
+
+                ActivityCompat.requestPermissions(this, arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ), 100)
+            }
+            else -> {
+                // Permission has not been asked yet
+                ActivityCompat.requestPermissions(this, arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ), 100)
+            }
         }
     }
 
