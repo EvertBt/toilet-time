@@ -379,8 +379,14 @@ class MainActivity : AppCompatActivity() {
     private fun clickBTNNearbyToilets(resultLauncher : ActivityResultLauncher<Intent>){
         val nearbyToiletsIntent = NearbyToiletsActivity.nearbyToiletIntent(this)
         //AddToiletIntent.putExtra() add all needed extras to add a new toilet
-        nearbyToiletsIntent.putExtra("lat", currentLat)
-        nearbyToiletsIntent.putExtra("long", currentLong)
+
+        if(hasPermissions()){
+            nearbyToiletsIntent.putExtra("lat", mapHelper.mMyLocationOverlay!!.myLocation.latitude)
+            nearbyToiletsIntent.putExtra("long", mapHelper.mMyLocationOverlay!!.myLocation.longitude)
+        }else{
+            nearbyToiletsIntent.putExtra("lat", currentLat)
+            nearbyToiletsIntent.putExtra("long", currentLong)
+        }
         Log.d("click lat:", currentLat.toString())
         Log.d("click long:", currentLong.toString())
 
