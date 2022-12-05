@@ -1,6 +1,7 @@
 package edu.ap.toilettime.Adapters
 
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +14,7 @@ import edu.ap.toilettime.model.Toilet
 import org.osmdroid.bonuspack.routing.OSRMRoadManager
 import org.osmdroid.bonuspack.routing.RoadManager
 import org.osmdroid.util.GeoPoint
+import kotlin.math.roundToInt
 
 class ToiletAdapter(private val context: Context, private val dataSource: ArrayList<Toilet>) : BaseAdapter() {
     private  val inflater: LayoutInflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
@@ -51,7 +53,7 @@ class ToiletAdapter(private val context: Context, private val dataSource: ArrayL
             if (toilet.distance!! > 1){
                 tvDistance.text = "${String.format("%.1f", toilet.distance)}km"
             }else{
-                tvDistance.text = "${String.format("%.f", toilet.distance!! * 1000)}m"
+                tvDistance.text = "${(toilet.distance!! * 1000).roundToInt()}m"
             }
         }
 
