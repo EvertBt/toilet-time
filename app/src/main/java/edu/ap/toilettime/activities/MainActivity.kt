@@ -135,11 +135,38 @@ class MainActivity : AppCompatActivity() {
         if (hasPermissions()) {
             mapHelper.initMap(true, lastLocation, toiletList, 19.0, false)
         }else{
-            ActivityCompat.requestPermissions(this, arrayOf(
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ), 100)
+            //request permissions
+            requestPermission()
+        }
+    }
+
+    private fun requestPermission(){
+        when {
+            (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+            and (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+            and (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)-> {
+                // Permission is granted
+            }
+            (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE))
+            and (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION))
+            and (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION))-> {
+                // Aditional rationale should be displayed
+                Log.d("permissionrationale","should be shown")
+
+                ActivityCompat.requestPermissions(this, arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ), 100)
+            }
+            else -> {
+                // Permission has not been asked yet
+                ActivityCompat.requestPermissions(this, arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ), 100)
+            }
         }
     }
 
@@ -285,6 +312,7 @@ class MainActivity : AppCompatActivity() {
         // redraw toilet icons on map
         mapHelper.clearMarkers()
         for (toilet in toiletFilterList){
+            Log.d("addmarkers when updating filterlist",toilet.addedBy)
             mapHelper.addMarker(toilet, GeoPoint(toilet.latitude, toilet.longitude), "", R.mipmap.icon_toilet_map_larger)
         }
     }
@@ -334,14 +362,14 @@ class MainActivity : AppCompatActivity() {
 
                         val location = GeoPoint(lat, long)
 
-                        mapHelper.initMap(hasPermissions(), location, toiletList, 19.0, false)
-
                         btnMaleFilterActive = extras.getBoolean("MALE-FILTER", false)
                         btnFemaleFilterActive = extras.getBoolean("FEMALE-FILTER", false)
                         btnWheelchairFilterActive = extras.getBoolean("WHEELCHAIR-FILTER", false)
                         btnChangingTableFilterActive = extras.getBoolean("CHANGING-TABLE-FILTER", false)
 
                         checkFilters(btnMaleFilterActive, btnFemaleFilterActive, btnWheelchairFilterActive, btnChangingTableFilterActive)
+
+                        mapHelper.initMap(hasPermissions(), location, toiletFilterList, 19.0, false)
                     }
                 }
             }
@@ -351,8 +379,14 @@ class MainActivity : AppCompatActivity() {
     private fun clickBTNNearbyToilets(resultLauncher : ActivityResultLauncher<Intent>){
         val nearbyToiletsIntent = NearbyToiletsActivity.nearbyToiletIntent(this)
         //AddToiletIntent.putExtra() add all needed extras to add a new toilet
-        nearbyToiletsIntent.putExtra("lat", currentLat)
-        nearbyToiletsIntent.putExtra("long", currentLong)
+
+        if(hasPermissions()){
+            nearbyToiletsIntent.putExtra("lat", mapHelper.mMyLocationOverlay!!.myLocation.latitude)
+            nearbyToiletsIntent.putExtra("long", mapHelper.mMyLocationOverlay!!.myLocation.longitude)
+        }else{
+            nearbyToiletsIntent.putExtra("lat", currentLat)
+            nearbyToiletsIntent.putExtra("long", currentLong)
+        }
         Log.d("click lat:", currentLat.toString())
         Log.d("click long:", currentLong.toString())
 
