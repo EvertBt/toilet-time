@@ -5,9 +5,11 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
@@ -48,6 +50,16 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        //set locationPermission in companionobject
+        locationPermission = hasPermissions()
+
+        if (Build.VERSION.SDK_INT >= 21) {
+            val window = this.window
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            window.statusBarColor = this.resources.getColor(R.color.primary_background_dark)
+        }
 
         //Get views
         setContentView(R.layout.activity_main)
@@ -339,6 +351,11 @@ class MainActivity : AppCompatActivity() {
     private fun clickBTNNearbyToilets(resultLauncher : ActivityResultLauncher<Intent>){
         val nearbyToiletsIntent = NearbyToiletsActivity.nearbyToiletIntent(this)
         //AddToiletIntent.putExtra() add all needed extras to add a new toilet
+        nearbyToiletsIntent.putExtra("lat", currentLat)
+        nearbyToiletsIntent.putExtra("long", currentLong)
+        Log.d("click lat:", currentLat.toString())
+        Log.d("click long:", currentLong.toString())
+
         nearbyToiletsIntent.putExtra("MALE-FILTER", btnMaleFilterActive)
         nearbyToiletsIntent.putExtra("FEMALE-FILTER", btnFemaleFilterActive)
         nearbyToiletsIntent.putExtra("WHEELCHAIR-FILTER", btnWheelchairFilterActive)
@@ -393,6 +410,11 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         mapHelper.getMapView()?.onResume()
+    }
+    companion object{
+        var locationPermission: Boolean = false
+        var currentLat: Double = 0.0
+        var currentLong: Double = 0.0
     }
 }
 

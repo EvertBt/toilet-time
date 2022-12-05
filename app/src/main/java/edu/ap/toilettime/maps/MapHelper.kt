@@ -85,11 +85,17 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
                     Handler(Looper.getMainLooper()).post {
                         Log.d("MAP", "Animating to own location: ${mMyLocationOverlay!!.myLocation}")
                         mapController!!.animateTo(mMyLocationOverlay!!.myLocation)
+
+                        //set current location
+                        MainActivity.currentLat = mMyLocationOverlay!!.myLocation.latitude
+                        MainActivity.currentLong = mMyLocationOverlay!!.myLocation.longitude
                     }
                 }
                 mMapView!!.overlays.add(mMyLocationOverlay)
             }else{
                 setCenter(GeoPoint(51.23020595, 4.41655480828479), "Campus Ellermanstraat")
+                MainActivity.currentLat = 51.23020595
+                MainActivity.currentLong = 4.41655480828479
             }
         }
     }

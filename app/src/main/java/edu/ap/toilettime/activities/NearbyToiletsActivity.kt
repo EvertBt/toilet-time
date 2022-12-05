@@ -36,9 +36,15 @@ class NearbyToiletsActivity : AppCompatActivity() {
     var toiletList: ArrayList<Toilet> = ArrayList()
     var toiletFilterList: ArrayList<Toilet> = ArrayList()
 
+    var currentLat: Double = 0.0
+    var currentLong: Double = 0.0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_nearby_toilets)
+
+        currentLat = intent.getDoubleExtra("lat", 0.0)
+        currentLong = intent.getDoubleExtra("long", 0.0)
 
         btnBack = findViewById(R.id.btnBackNearbyToilets)
 
@@ -55,9 +61,6 @@ class NearbyToiletsActivity : AppCompatActivity() {
             parent, view, position, id ->
             val selectedToilet : Toilet = parent.getItemAtPosition(position) as Toilet
 
-            Log.d("lat nearby",selectedToilet.latitude.toString())
-            Log.d("long nearby",selectedToilet.longitude.toString())
-
             intent = Intent()
             // intent.putExtra() return needed data to add new toilet
             intent.putExtra("lat", selectedToilet.latitude)
@@ -69,6 +72,8 @@ class NearbyToiletsActivity : AppCompatActivity() {
 
         btnBack.setOnClickListener {
             intent = Intent()
+            intent.putExtra("lat", currentLat)
+            intent.putExtra("long", currentLong)
             this.finish()
         }
 
@@ -115,7 +120,6 @@ class NearbyToiletsActivity : AppCompatActivity() {
         }
         btnFemaleFilterActive = intent.getBooleanExtra("FEMALE-FILTER", false)
         if(btnFemaleFilterActive){
-            Log.d("female filter", "changing to on")
             btnFemaleFilter.icon.setTint(getColor(R.color.white))
         }
         btnWheelchairFilterActive = intent.getBooleanExtra("WHEELCHAIR-FILTER", false)
