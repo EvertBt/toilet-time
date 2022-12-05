@@ -285,6 +285,7 @@ class MainActivity : AppCompatActivity() {
         // redraw toilet icons on map
         mapHelper.clearMarkers()
         for (toilet in toiletFilterList){
+            Log.d("addmarkers when updating filterlist",toilet.addedBy)
             mapHelper.addMarker(toilet, GeoPoint(toilet.latitude, toilet.longitude), "", R.mipmap.icon_toilet_map_larger)
         }
     }
@@ -334,14 +335,14 @@ class MainActivity : AppCompatActivity() {
 
                         val location = GeoPoint(lat, long)
 
-                        mapHelper.initMap(hasPermissions(), location, toiletList, 19.0, false)
-
                         btnMaleFilterActive = extras.getBoolean("MALE-FILTER", false)
                         btnFemaleFilterActive = extras.getBoolean("FEMALE-FILTER", false)
                         btnWheelchairFilterActive = extras.getBoolean("WHEELCHAIR-FILTER", false)
                         btnChangingTableFilterActive = extras.getBoolean("CHANGING-TABLE-FILTER", false)
 
                         checkFilters(btnMaleFilterActive, btnFemaleFilterActive, btnWheelchairFilterActive, btnChangingTableFilterActive)
+
+                        mapHelper.initMap(hasPermissions(), location, toiletFilterList, 19.0, false)
                     }
                 }
             }

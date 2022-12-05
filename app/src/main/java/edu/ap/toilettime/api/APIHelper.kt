@@ -9,7 +9,6 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import edu.ap.toilettime.activities.AddToiletActivity
-import androidx.core.content.ContextCompat
 import edu.ap.toilettime.activities.MainActivity
 import edu.ap.toilettime.maps.MapHelper
 import edu.ap.toilettime.model.Address
