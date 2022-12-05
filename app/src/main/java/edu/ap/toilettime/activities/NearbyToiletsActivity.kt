@@ -3,7 +3,7 @@ package edu.ap.toilettime.activities
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
+import android.webkit.WebView
 import android.widget.Adapter
 import android.widget.AdapterView
 import android.widget.Button
@@ -14,9 +14,14 @@ import edu.ap.toilettime.Adapters.ToiletAdapter
 import edu.ap.toilettime.R
 import edu.ap.toilettime.database.DatabaseHelper
 import edu.ap.toilettime.model.Toilet
+import org.osmdroid.bonuspack.routing.OSRMRoadManager
+import org.osmdroid.bonuspack.routing.RoadManager
+import org.osmdroid.util.GeoPoint
 
 
 class NearbyToiletsActivity : AppCompatActivity() {
+
+    lateinit var roadManager: RoadManager
     lateinit var btnBack : Button
 
     lateinit var btnClearFilter : Button
@@ -36,9 +41,19 @@ class NearbyToiletsActivity : AppCompatActivity() {
     var toiletList: ArrayList<Toilet> = ArrayList()
     var toiletFilterList: ArrayList<Toilet> = ArrayList()
 
+    var currentLat: Double = 0.0
+    var currentLong: Double = 0.0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        //setup road manager
+        roadManager = OSRMRoadManager(this, WebView(this).settings.userAgentString)
+
         setContentView(R.layout.activity_nearby_toilets)
+
+        currentLat = intent.getDoubleExtra("lat", 0.0)
+        currentLong = intent.getDoubleExtra("long", 0.0)
 
         btnBack = findViewById(R.id.btnBackNearbyToilets)
 
@@ -55,9 +70,6 @@ class NearbyToiletsActivity : AppCompatActivity() {
             parent, view, position, id ->
             val selectedToilet : Toilet = parent.getItemAtPosition(position) as Toilet
 
-            Log.d("lat nearby",selectedToilet.latitude.toString())
-            Log.d("long nearby",selectedToilet.longitude.toString())
-
             intent = Intent()
             // intent.putExtra() return needed data to add new toilet
             intent.putExtra("lat", selectedToilet.latitude)
@@ -69,6 +81,8 @@ class NearbyToiletsActivity : AppCompatActivity() {
 
         btnBack.setOnClickListener {
             intent = Intent()
+            intent.putExtra("lat", currentLat)
+            intent.putExtra("long", currentLong)
             this.finish()
         }
 
@@ -102,8 +116,13 @@ class NearbyToiletsActivity : AppCompatActivity() {
             runOnUiThread{
                 checkFilters()
                 updateFilterList()
+
                 toiletAdapter = ToiletAdapter(this, toiletFilterList)
                 lvToilets.adapter = toiletAdapter as ToiletAdapter
+
+                Thread{
+                    calculateDistances()
+                }.start()
             }
         }.start()
     }
@@ -115,7 +134,6 @@ class NearbyToiletsActivity : AppCompatActivity() {
         }
         btnFemaleFilterActive = intent.getBooleanExtra("FEMALE-FILTER", false)
         if(btnFemaleFilterActive){
-            Log.d("female filter", "changing to on")
             btnFemaleFilter.icon.setTint(getColor(R.color.white))
         }
         btnWheelchairFilterActive = intent.getBooleanExtra("WHEELCHAIR-FILTER", false)
@@ -223,6 +241,24 @@ class NearbyToiletsActivity : AppCompatActivity() {
         // update adapter
         toiletAdapter = ToiletAdapter(this, toiletFilterList)
         lvToilets.adapter = toiletAdapter as ToiletAdapter
+    }
+
+    private fun calculateDistances(){
+
+        for (toilet in toiletFilterList){
+            val waypoints: ArrayList<GeoPoint> = ArrayList()
+            waypoints.add(GeoPoint(currentLat, currentLong))
+            waypoints.add(GeoPoint(toilet.latitude,toilet.longitude))
+
+            val road = roadManager.getRoad(waypoints)
+            toilet.distance = road.mLength
+        }
+
+        toiletList = ArrayList(toiletList.sortedWith(compareBy { it.distance }))
+
+        runOnUiThread{
+            updateFilterList()
+        }
     }
 
     override fun finish() {

@@ -5,9 +5,13 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.os.StrictMode
+import android.os.StrictMode.ThreadPolicy
 import android.util.Log
 import android.view.View
+import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.EditText
@@ -24,6 +28,7 @@ import edu.ap.toilettime.database.DatabaseHelper
 import edu.ap.toilettime.maps.MapHelper
 import edu.ap.toilettime.model.Toilet
 import org.osmdroid.util.GeoPoint
+
 
 class MainActivity : AppCompatActivity() {
     lateinit var btnAddToilet : Button
@@ -48,6 +53,19 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        //OSM Setup
+        StrictMode.setThreadPolicy(ThreadPolicy.Builder().permitAll().build())
+
+        //set locationPermission in companionobject
+        locationPermission = hasPermissions()
+
+        if (Build.VERSION.SDK_INT >= 21) {
+            val window = this.window
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            window.statusBarColor = this.resources.getColor(R.color.primary_background_dark)
+        }
 
         //Get views
         setContentView(R.layout.activity_main)
@@ -123,11 +141,38 @@ class MainActivity : AppCompatActivity() {
         if (hasPermissions()) {
             mapHelper.initMap(true, lastLocation, toiletList, 19.0, false)
         }else{
-            ActivityCompat.requestPermissions(this, arrayOf(
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
-            ), 100)
+            //request permissions
+            requestPermission()
+        }
+    }
+
+    private fun requestPermission(){
+        when {
+            (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED)
+            and (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED)
+            and (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED)-> {
+                // Permission is granted
+            }
+            (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.WRITE_EXTERNAL_STORAGE))
+            and (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_COARSE_LOCATION))
+            and (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION))-> {
+                // Aditional rationale should be displayed
+                Log.d("permissionrationale","should be shown")
+
+                ActivityCompat.requestPermissions(this, arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ), 100)
+            }
+            else -> {
+                // Permission has not been asked yet
+                ActivityCompat.requestPermissions(this, arrayOf(
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ), 100)
+            }
         }
     }
 
@@ -273,6 +318,7 @@ class MainActivity : AppCompatActivity() {
         // redraw toilet icons on map
         mapHelper.clearMarkers()
         for (toilet in toiletFilterList){
+            Log.d("addmarkers when updating filterlist",toilet.addedBy)
             mapHelper.addMarker(toilet, GeoPoint(toilet.latitude, toilet.longitude), "", R.mipmap.icon_toilet_map_larger)
         }
     }
@@ -322,14 +368,14 @@ class MainActivity : AppCompatActivity() {
 
                         val location = GeoPoint(lat, long)
 
-                        mapHelper.initMap(hasPermissions(), location, toiletList, 19.0, false)
-
                         btnMaleFilterActive = extras.getBoolean("MALE-FILTER", false)
                         btnFemaleFilterActive = extras.getBoolean("FEMALE-FILTER", false)
                         btnWheelchairFilterActive = extras.getBoolean("WHEELCHAIR-FILTER", false)
                         btnChangingTableFilterActive = extras.getBoolean("CHANGING-TABLE-FILTER", false)
 
                         checkFilters(btnMaleFilterActive, btnFemaleFilterActive, btnWheelchairFilterActive, btnChangingTableFilterActive)
+
+                        mapHelper.initMap(hasPermissions(), location, toiletFilterList, 19.0, false)
                     }
                 }
             }
@@ -339,6 +385,17 @@ class MainActivity : AppCompatActivity() {
     private fun clickBTNNearbyToilets(resultLauncher : ActivityResultLauncher<Intent>){
         val nearbyToiletsIntent = NearbyToiletsActivity.nearbyToiletIntent(this)
         //AddToiletIntent.putExtra() add all needed extras to add a new toilet
+
+        if(hasPermissions()){
+            nearbyToiletsIntent.putExtra("lat", mapHelper.mMyLocationOverlay!!.myLocation.latitude)
+            nearbyToiletsIntent.putExtra("long", mapHelper.mMyLocationOverlay!!.myLocation.longitude)
+        }else{
+            nearbyToiletsIntent.putExtra("lat", currentLat)
+            nearbyToiletsIntent.putExtra("long", currentLong)
+        }
+        Log.d("click lat:", currentLat.toString())
+        Log.d("click long:", currentLong.toString())
+
         nearbyToiletsIntent.putExtra("MALE-FILTER", btnMaleFilterActive)
         nearbyToiletsIntent.putExtra("FEMALE-FILTER", btnFemaleFilterActive)
         nearbyToiletsIntent.putExtra("WHEELCHAIR-FILTER", btnWheelchairFilterActive)
@@ -393,6 +450,11 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         mapHelper.getMapView()?.onResume()
+    }
+    companion object{
+        var locationPermission: Boolean = false
+        var currentLat: Double = 0.0
+        var currentLong: Double = 0.0
     }
 }
 

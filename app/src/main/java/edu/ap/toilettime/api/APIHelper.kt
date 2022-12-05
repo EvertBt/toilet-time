@@ -1,12 +1,15 @@
 package edu.ap.toilettime.api
 
+import android.Manifest
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import edu.ap.toilettime.activities.AddToiletActivity
+import edu.ap.toilettime.activities.MainActivity
 import edu.ap.toilettime.maps.MapHelper
 import edu.ap.toilettime.model.Address
 import edu.ap.toilettime.model.Toilet
@@ -125,6 +128,13 @@ class APIHelper {
                             myHandler.post {
                                 //mapHelper.addMarker(null, geoPoint, name, android.R.drawable.btn_plus) //TODO add icon here
                                 mapHelper.setCenter(geoPoint, name)
+
+                                //set current location if no location permissions
+                                if(!MainActivity.locationPermission){
+                                    Log.d("APIhelper", "Has no location permission")
+                                    MainActivity.currentLat = geoPoint.latitude
+                                    MainActivity.currentLong = geoPoint.longitude
+                                }
                             }
                         }catch (_: Exception){
                             myHandler.post {
