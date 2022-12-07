@@ -178,16 +178,20 @@ class MainActivity : AppCompatActivity() {
 
     private fun calculateDistances(){
 
-        for (toilet in toiletList){
-            val waypoints: ArrayList<GeoPoint> = ArrayList()
-            waypoints.add(GeoPoint(currentLat, currentLong))
-            waypoints.add(GeoPoint(toilet.latitude,toilet.longitude))
+        if (!hasPermissions()) return
 
-            val road = roadManager.getRoad(waypoints)
-            toilet.distance = road.mLength
+        mapHelper.mMyLocationOverlay!!.runOnFirstFix{
+            for (toilet in toiletList){
+                val waypoints: ArrayList<GeoPoint> = ArrayList()
+
+                waypoints.add(mapHelper.mMyLocationOverlay!!.myLocation)
+                waypoints.add(GeoPoint(toilet.latitude,toilet.longitude))
+
+                val road = roadManager.getRoad(waypoints)
+                toilet.distance = road.mLength
+            }
+            toiletList = ArrayList(toiletList.sortedWith(compareBy { it.distance }))
         }
-
-        toiletList = ArrayList(toiletList.sortedWith(compareBy { it.distance }))
     }
 
     private fun searchLocation(address: String){

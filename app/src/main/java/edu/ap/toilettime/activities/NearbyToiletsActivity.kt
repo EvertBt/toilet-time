@@ -109,10 +109,15 @@ class NearbyToiletsActivity : AppCompatActivity() {
         //loadToiletData()
 
         toiletList = Gson().fromJson(intent.extras?.get(Toilet.TOILET).toString(), object : TypeToken<List<Toilet>>() {}.type)
-        checkFilters()
-        updateFilterList()
-        toiletAdapter = ToiletAdapter(this, toiletFilterList)
-        lvToilets.adapter = toiletAdapter as ToiletAdapter
+
+        Thread{
+            runOnUiThread{
+                checkFilters()
+                updateFilterList()
+                toiletAdapter = ToiletAdapter(this, toiletFilterList)
+                lvToilets.adapter = toiletAdapter as ToiletAdapter
+            }
+        }.start()
     }
 
     fun loadToiletData(){
