@@ -127,13 +127,17 @@ class APIHelper {
                             val geoPoint = GeoPoint(lat, lon)
                             myHandler.post {
                                 //mapHelper.addMarker(null, geoPoint, name, android.R.drawable.btn_plus) //TODO add icon here
-                                mapHelper.setCenter(geoPoint, name)
+                                mapHelper.setCenter(geoPoint)
 
                                 //set current location if no location permissions
                                 if(!MainActivity.locationPermission){
-                                    Log.d("APIhelper", "Has no location permission")
                                     MainActivity.currentLat = geoPoint.latitude
                                     MainActivity.currentLong = geoPoint.longitude
+
+                                    //Recalculate distance from new static location
+                                    if (mapHelper.activity is MainActivity){
+                                        mapHelper.activity.calculateDistances()
+                                    }
                                 }
                             }
                         }catch (_: Exception){

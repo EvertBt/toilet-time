@@ -14,6 +14,8 @@ import edu.ap.toilettime.activities.MainActivity
 import edu.ap.toilettime.activities.ToiletDetailActivity
 import edu.ap.toilettime.model.Toilet
 import org.osmdroid.api.IMapController
+import org.osmdroid.bonuspack.clustering.RadiusMarkerClusterer
+import org.osmdroid.bonuspack.utils.BonusPackHelper
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
 import org.osmdroid.util.GeoPoint
@@ -24,7 +26,7 @@ import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
 import java.io.File
 
 
-class MapHelper(packageName: String, cachePath: String, mapView: MapView, private val activity: AppCompatActivity) {
+class MapHelper(packageName: String, cachePath: String, mapView: MapView, val activity: AppCompatActivity, private val hasLocationPermission: Boolean) {
 
     private var mMapView: MapView? = null
     private var mapController: IMapController? = null
@@ -42,14 +44,20 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
         mapController = mMapView?.controller
 
         //Setup map
-        mMapView!!.setMultiTouchControls(true);
-        mMapView!!.setBuiltInZoomControls(false);
+        mMapView!!.setMultiTouchControls(true)
+        mMapView!!.setBuiltInZoomControls(false)
 
         mMyLocationOverlay = MyLocationNewOverlay(GpsMyLocationProvider(activity.applicationContext), mMapView)
-        mMyLocationOverlay!!.enableMyLocation()
+
+        if (hasLocationPermission){
+            mMyLocationOverlay!!.enableMyLocation()
+        }else{
+            MainActivity.currentLat = 51.23020595
+            MainActivity.currentLong = 4.41655480828479
+        }
     }
 
-    fun initMap(hasLocationPermission: Boolean, location: GeoPoint?, toilets: ArrayList<Toilet>, zoom: Double, addingToilet: Boolean) {
+    fun initMap(location: GeoPoint?, toilets: ArrayList<Toilet>, zoom: Double, addingToilet: Boolean) {
         Handler(Looper.getMainLooper()).post {
 
             mMapView?.setTileSource(TileSourceFactory.MAPNIK)
@@ -75,7 +83,7 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
             mapController!!.setZoom(zoom)
 
             if (location != null){
-                setCenter(location, "")
+                setCenter(location)
 
                 Log.d("MAP", "Setting center on ${location.latitude}, ${location.longitude}")
                 mMapView!!.overlays.add(mMyLocationOverlay)
@@ -106,9 +114,7 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
                 }
 
             }else{
-                setCenter(GeoPoint(51.23020595, 4.41655480828479), "Campus Ellermanstraat")
-                MainActivity.currentLat = 51.23020595
-                MainActivity.currentLong = 4.41655480828479
+                setCenter(GeoPoint(MainActivity.currentLat, MainActivity.currentLong))
             }
         }
     }
@@ -145,7 +151,7 @@ class MapHelper(packageName: String, cachePath: String, mapView: MapView, privat
         mMapView?.overlays?.forEach { (it as? Marker)?.remove(mMapView) }
     }
 
-    fun setCenter(geoPoint: GeoPoint, name: String) {
+    fun setCenter(geoPoint: GeoPoint) {
         mapController?.setCenter(geoPoint)
     }
 

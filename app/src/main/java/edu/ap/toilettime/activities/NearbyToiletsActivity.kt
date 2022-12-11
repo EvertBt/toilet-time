@@ -3,6 +3,7 @@ package edu.ap.toilettime.activities
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.webkit.WebView
 import android.widget.Adapter
 import android.widget.AdapterView
@@ -19,7 +20,6 @@ import edu.ap.toilettime.model.Toilet
 import org.osmdroid.bonuspack.routing.OSRMRoadManager
 import org.osmdroid.bonuspack.routing.RoadManager
 import org.osmdroid.util.GeoPoint
-
 
 class NearbyToiletsActivity : AppCompatActivity() {
 
@@ -106,8 +106,6 @@ class NearbyToiletsActivity : AppCompatActivity() {
             switchChangingTableFilter()
         }
 
-        //loadToiletData()
-
         toiletList = Gson().fromJson(intent.extras?.get(Toilet.TOILET).toString(), object : TypeToken<List<Toilet>>() {}.type)
 
         Thread{
@@ -116,6 +114,11 @@ class NearbyToiletsActivity : AppCompatActivity() {
                 updateFilterList()
                 toiletAdapter = ToiletAdapter(this, toiletFilterList)
                 lvToilets.adapter = toiletAdapter as ToiletAdapter
+
+                Thread{
+                    //Re calculate distances in case of fast load
+                    calculateDistances()
+                }.start()
             }
         }.start()
     }

@@ -75,8 +75,8 @@ class AddToiletActivity : AppCompatActivity(){
 
     private fun setupMap(){
 
-        mapHelper = MapHelper(packageName, cacheDir.absolutePath, findViewById(R.id.minimapview), this@AddToiletActivity)
-        mapHelper.initMap(false, GeoPoint(location.latitude, location.longitude), ArrayList(), 20.0, true)
+        mapHelper = MapHelper(packageName, cacheDir.absolutePath, findViewById(R.id.minimapview), this@AddToiletActivity, false)
+        mapHelper.initMap(GeoPoint(location.latitude, location.longitude), ArrayList(), 20.0, true)
 
         mapHelper.getMapView()!!.overlays.add(MapEventsOverlay(object : MapEventsReceiver {
             override fun singleTapConfirmedHelper(p: GeoPoint): Boolean {
@@ -133,7 +133,8 @@ class AddToiletActivity : AppCompatActivity(){
                 cbWomenAccessible.isChecked,
                 cbWheelchairAccessible.isChecked,
                 cbChangingTable.isChecked,
-                ArrayList()
+                ArrayList(),
+                null
             )
 
             //Update shared preferences
@@ -148,6 +149,7 @@ class AddToiletActivity : AppCompatActivity(){
             finish()
 
         }else{
+            tvAddError.text = "Gelieve een geldig email adres in te vullen"
             tvAddError.visibility = View.VISIBLE
         }
     }

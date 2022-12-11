@@ -94,7 +94,7 @@ class MainActivity : AppCompatActivity() {
         btnChangingTableFilterActive = false
 
         //Setup OSM
-        mapHelper = MapHelper(packageName, cacheDir.absolutePath, findViewById(R.id.mapview), this@MainActivity)
+        mapHelper = MapHelper(packageName, cacheDir.absolutePath, findViewById(R.id.mapview), this@MainActivity, hasPermissions())
 
         //Setup listeners
         setupListeners()
@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (hasPermissions()) {
-            mapHelper.initMap(true, lastLocation, toiletList, 19.0, false)
+            mapHelper.initMap(lastLocation, toiletList, 19.0, false)
         }else{
             requestPermission()
         }
@@ -154,13 +154,8 @@ class MainActivity : AppCompatActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 100) {
-            if (hasPermissions()) {
-                Log.d("MAP", "Initializing map from onRequestPermissionsResult, has permissions")
-                mapHelper.initMap(true, lastLocation, toiletList, 19.0, false)
-            } else {
-                Log.d("MAP", "Initializing map from onRequestPermissionsResult, no permissions")
-                mapHelper.initMap(false, lastLocation, toiletList, 19.0, false)
-            }
+            mapHelper = MapHelper(packageName, cacheDir.absolutePath, findViewById(R.id.mapview), this@MainActivity, hasPermissions())
+            mapHelper.initMap(lastLocation, toiletList, 19.0, false)
         }
     }
 
@@ -169,29 +164,39 @@ class MainActivity : AppCompatActivity() {
             toiletList = DatabaseHelper(this@MainActivity).getAllToilets()
 
             if (toiletList.isNotEmpty()) {
-                mapHelper.initMap(hasPermissions(), lastLocation, toiletList, 19.0, false)
+                mapHelper.initMap(lastLocation, toiletList, 19.0, false)
             }
-
             calculateDistances()
         }.start()
     }
 
-    private fun calculateDistances(){
+    //Calculate distances of all routes
+    fun calculateDistances(){
 
-        if (!hasPermissions()) return
-
-        mapHelper.mMyLocationOverlay!!.runOnFirstFix{
-            for (toilet in toiletList){
-                val waypoints: ArrayList<GeoPoint> = ArrayList()
-
-                waypoints.add(mapHelper.mMyLocationOverlay!!.myLocation)
-                waypoints.add(GeoPoint(toilet.latitude,toilet.longitude))
-
-                val road = roadManager.getRoad(waypoints)
-                toilet.distance = road.mLength
+        //If user gave location permissions, we have to wait until there is a fix on the location
+        if (hasPermissions()){
+            mapHelper.mMyLocationOverlay!!.runOnFirstFix{
+                calculateFrom(mapHelper.mMyLocationOverlay!!.myLocation)
             }
-            toiletList = ArrayList(toiletList.sortedWith(compareBy { it.distance }))
         }
+        //If we don't have location permission, use a static location
+        else{
+            calculateFrom(GeoPoint(currentLat, currentLong))
+        }
+    }
+
+    //Used by calculateDistances()
+    private fun calculateFrom(location: GeoPoint){
+        for (toilet in toiletList){
+            val waypoints: ArrayList<GeoPoint> = ArrayList()
+
+            waypoints.add(location)
+            waypoints.add(GeoPoint(toilet.latitude,toilet.longitude))
+
+            val road = roadManager.getRoad(waypoints)
+            toilet.distance = road.mLength
+        }
+        toiletList = ArrayList(toiletList.sortedWith(compareBy { it.distance }))
     }
 
     private fun searchLocation(address: String){
@@ -350,10 +355,10 @@ class MainActivity : AppCompatActivity() {
                 toiletFilterList.remove(toilet)
             }
         }
+
         // redraw toilet icons on map
         mapHelper.clearMarkers()
         for (toilet in toiletFilterList){
-            Log.d("addmarkers when updating filterlist",toilet.addedBy)
             mapHelper.addMarker(toilet, GeoPoint(toilet.latitude, toilet.longitude), "", R.mipmap.icon_toilet_map_larger)
         }
     }
@@ -415,7 +420,7 @@ class MainActivity : AppCompatActivity() {
 
                         checkFilters(btnMaleFilterActive, btnFemaleFilterActive, btnWheelchairFilterActive, btnChangingTableFilterActive)
 
-                        mapHelper.initMap(hasPermissions(), location, toiletFilterList, 19.0, false)
+                        mapHelper.initMap(location, toiletFilterList, 19.0, false)
                     }
                 }
             }

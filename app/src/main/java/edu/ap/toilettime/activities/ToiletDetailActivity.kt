@@ -59,7 +59,7 @@ class ToiletDetailActivity : AppCompatActivity() {
         txtEmail.setText(sharedPreferences.getString(User.EMAIL, ""))
 
         //Setup OSM
-        mapHelper = MapHelper(packageName, cacheDir.absolutePath, findViewById(R.id.minimapview), this@ToiletDetailActivity)
+        mapHelper = MapHelper(packageName, cacheDir.absolutePath, findViewById(R.id.minimapview), this@ToiletDetailActivity, false)
 
         //Retrieve clicked toilet from intent
         toilet = Gson().fromJson(intent.extras?.get(Toilet.TOILET).toString(), Toilet::class.java)
@@ -81,7 +81,7 @@ class ToiletDetailActivity : AppCompatActivity() {
         tvAddress.text = "${toilet.street} ${toilet.houseNr}, ${toilet.districtCode} ${toilet.district}"
         tvReportCount.text = "Aantal rapporteringen: ${toilet.reporterEmails.size}"
 
-        mapHelper.initMap(false, GeoPoint(toilet.latitude, toilet.longitude), ArrayList(listOf(toilet)), 20.0, false)
+        mapHelper.initMap(GeoPoint(toilet.latitude, toilet.longitude), ArrayList(listOf(toilet)), 20.0, false)
     }
 
     private fun onReportClick(){
