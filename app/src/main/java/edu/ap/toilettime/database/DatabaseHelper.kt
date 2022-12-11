@@ -12,20 +12,22 @@ class DatabaseHelper(private val activity: AppCompatActivity) {
 
     fun getAllToilets(): ArrayList<Toilet>{
 
+        //Retrieve all toilets from firebase async
         Thread{
             getFirebaseToilets()
         }.start()
 
+        //Return all toilets saved locally first
         return getLocalToilets()
     }
 
     fun addToilet(toilet: Toilet){
 
-        //Firebase
+        //Add toilet to Firebase
         val db = ToiletFirebaseRepository()
         val id = db.addToilet(toilet)
 
-        //Toilet will be added to local db on update
+        //Sync local database with Firebase
         if (id != null){
             toilet.id = id
             updateLocalDatabase(ArrayList(listOf(toilet)))
@@ -44,7 +46,7 @@ class DatabaseHelper(private val activity: AppCompatActivity) {
         toiletDao.update(toilet)
         localDb.close()
 
-        //Update all values
+        //Reload data on the current activity
         when (activity) {
             is MainActivity -> activity.loadToiletData()
             is NearbyToiletsActivity -> activity.loadToiletData()
@@ -53,15 +55,13 @@ class DatabaseHelper(private val activity: AppCompatActivity) {
         //Update firebase
         val db = ToiletFirebaseRepository()
         db.updateToilet(toilet)
-
-        Log.d("DATABASE", "Updated toilet with id: ${toilet.id}")
     }
 
     private fun getLocalToilets(): ArrayList<Toilet>{
 
         val toiletList = ArrayList<Toilet>()
         val localDb = Room.databaseBuilder(
-            activity!!.applicationContext,
+            activity.applicationContext,
             ToiletDatabase::class.java, "toilet-database"
         ).build()
 
@@ -74,23 +74,22 @@ class DatabaseHelper(private val activity: AppCompatActivity) {
 
     private fun getFirebaseToilets(){
 
-        val toiletList = ArrayList<Toilet>()
         val db = ToiletFirebaseRepository()
         db.allToilets()?.let {
+            //Try to update local database
             updateLocalDatabase(it)
-            toiletList.addAll(it)
         }
     }
 
     private fun updateLocalDatabase(updatedToilets: ArrayList<Toilet>){
 
+        //Check for differences between local and firebase
         for (localToilet in ArrayList(getLocalToilets())){
             updatedToilets.removeAll { it.id == localToilet.id }
         }
 
+        //Local database needs to be updated
         if (updatedToilets.isNotEmpty()){
-
-            Log.d("DATABASEHELPER", "${updatedToilets.size} toilets need to be updated!")
 
             val localDb = Room.databaseBuilder(
                 activity.applicationContext,
@@ -101,7 +100,7 @@ class DatabaseHelper(private val activity: AppCompatActivity) {
             toiletDao.insertAll(updatedToilets)
             localDb.close()
 
-            //Update all values
+            //Reload toilet data on the current activity
             when (activity) {
                 is MainActivity -> activity.loadToiletData()
                 is NearbyToiletsActivity -> activity.loadToiletData()
